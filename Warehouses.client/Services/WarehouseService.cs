@@ -39,23 +39,14 @@ public class WarehouseService : IWarehouseService
     
     public async Task<WarehousesTreeDTO> GetWarehousesTreeAsync(DateTime time, int? cargoTypeId = null)
     {
-        try
+        var utcTime = time.ToUniversalTime();
+        string endpoint = $"warehouses/tree?time={utcTime:yyyy-MM-ddTHH:mm:ss}Z";
+        if (cargoTypeId.HasValue)
         {
-            var utcTime = time.ToUniversalTime();
-            string endpoint = $"warehouses/tree?time={utcTime:yyyy-MM-ddTHH:mm:ss}Z";
-            
-            if (cargoTypeId.HasValue)
-            {
-                endpoint += $"&cargoTypeId={cargoTypeId.Value}";
-            }
-
-            var tree = await _apiService.GetAsync<WarehousesTreeDTO>(endpoint);
-            return tree ?? new WarehousesTreeDTO();
+            endpoint += $"&cargoTypeId={cargoTypeId.Value}";
         }
-        catch (Exception)
-        {
-            return new WarehousesTreeDTO();
-        }
+        var tree = await _apiService.GetAsync<WarehousesTreeDTO>(endpoint);
+        return tree ?? new WarehousesTreeDTO();
     }
     
     public async Task<Warehouse?> CreateWarehouseAsync(string name, DateTime? createdAt = null)
@@ -78,19 +69,12 @@ public class WarehouseService : IWarehouseService
     
     public async Task<bool> CloseWarehouseAsync(int id, DateTime? closedAt = null)
     {
-        try
-        {
-            var closeDto = new CloseWarehouseDTO 
-            { 
-                ClosedAt = closedAt?.ToUniversalTime()
-            };
-            var result = await _apiService.PostAsync<object>($"warehouses/{id}/close", closeDto);
-            return result != null;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        var closeDto = new CloseWarehouseDTO 
+        { 
+            ClosedAt = closedAt?.ToUniversalTime()
+        };
+        var result = await _apiService.PostAsync<object>($"warehouses/{id}/close", closeDto);
+        return result != null;
     }
     
     private static Warehouse MapToModel(WarehouseDTO dto)

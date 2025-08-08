@@ -39,34 +39,41 @@ public partial class CreateWarehouseViewModel : NameViewModelBase
         if (!ValidateName())
             return;
 
+        var executed = await ExecuteWithLoadingAsync(async () =>
+        {
+            var warehouse = await _warehouseService.CreateWarehouseAsync(GetCleanedName(), GetCreatedAtUtc());
+            if (warehouse == null)
+            {
+                throw new Exception("Не удалось создать склад");
+            }
+
+            _logger.LogInformation("Склад успешно создан: Id={Id}, Name={Name}", warehouse.Id, warehouse.Name);
+
+            var message = $"Склад '{warehouse.Name}' успешно создан";
+            if (CreatedAt != DateTime.Now)
+            {
+                message += $" на время {CreatedAt:yyyy-MM-dd HH:mm:ss}";
+            }
+            await ShowSuccessAsync(message);
+
+            CloseWindow(true);
+        }, "Создание склада", "Ошибка при создании склада");
+    }
+
+    private async Task<bool> ExecuteWithLoadingAsync(Func<Task> operation, string loadingText, string errorMessage)
+    {
         try
         {
-            LoadingOverlay.LoadingText = "Создание склада...";
+            LoadingOverlay.LoadingText = loadingText;
             LoadingOverlay.IsVisible = true;
             ClearError();
-
-            var warehouse = await _warehouseService.CreateWarehouseAsync(GetCleanedName(), GetCreatedAtUtc());
-            if (warehouse != null)
-            {
-                _logger.LogInformation("Склад успешно создан: Id={Id}, Name={Name}", warehouse.Id, warehouse.Name);
-                
-                var message = $"Склад '{warehouse.Name}' успешно создан";
-                if (CreatedAt != DateTime.Now)
-                {
-                    message += $" на время {CreatedAt:yyyy-MM-dd HH:mm:ss}";
-                }
-                await ShowSuccessAsync("Успех", message);
-                
-                CloseWindow(true);
-            }
-            else
-            {
-                SetError("Не удалось создать склад");
-            }
+            await operation();
+            return true;
         }
         catch (Exception ex)
         {
-            SetError($"Ошибка при создании склада: {ex.Message}");
+            SetError($"{errorMessage}: {ex.Message}");
+            return false;
         }
         finally
         {

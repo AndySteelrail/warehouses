@@ -7,18 +7,19 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.ViewModels.Base;
+using Warehouses.client.Common;
 
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
 /// ViewModel для добавления груза
 /// </summary>
-public partial class AddCargoViewModel : ViewModelBase
+public partial class AddCargoViewModel : DateTimeViewModelBase
 {
     private readonly IReferenceService _referenceService;
     private readonly ICargoService _cargoService;
-    private readonly IDialogService _dialogService;
-    private readonly ILogger<AddCargoViewModel> _logger;
+    private readonly new IDialogService _dialogService;
     private readonly int _platformId;
     private ObservableCollection<OperationType> _operationTypes = new();
     private ObservableCollection<CargoType> _cargoTypes = new();
@@ -33,17 +34,16 @@ public partial class AddCargoViewModel : ViewModelBase
 
     public LoadingOverlayViewModel LoadingOverlay { get; } = new();
            
-    public AddCargoViewModel(IReferenceService referenceService, ICargoService cargoService, IDialogService dialogService, ILogger<AddCargoViewModel> logger, int platformId)
+    public AddCargoViewModel(IReferenceService referenceService, ICargoService cargoService, IDialogService dialogService, ILogger<AddCargoViewModel> logger, int platformId) : base(dialogService)
     {
         _referenceService = referenceService;
         _cargoService = cargoService;
         _dialogService = dialogService;
-        _logger = logger;
         _platformId = platformId;
         
         InitializeOperationTypes();
         
-        _operationDateText = _operationDate.ToString("yyyy-MM-dd HH:mm:ss");
+        _operationDateText = _operationDate.ToString(Formatting.DateTimeHuman);
         
         LoadReferenceData();
     }
@@ -93,22 +93,21 @@ public partial class AddCargoViewModel : ViewModelBase
 
    public DateTime OperationDate
    {
-       get => _operationDate;
-       set => SetProperty(ref _operationDate, value);
+       get => CreatedAt;
+       set
+       {
+           CreatedAt = value;
+           SetProperty(ref _operationDate, value, nameof(OperationDate));
+       }
    }
        
    public string OperationDateText
    {
-       get => _operationDateText;
+       get => CreatedAtText;
        set
        {
-           if (SetProperty(ref _operationDateText, value))
-           {
-               if (DateTime.TryParse(value, out var parsedDate))
-               {
-                   _operationDate = parsedDate;
-               }
-           }
+           CreatedAtText = value;
+           SetProperty(ref _operationDateText, value, nameof(OperationDateText));
        }
    }
            
@@ -127,28 +126,15 @@ public partial class AddCargoViewModel : ViewModelBase
     
     private async void LoadReferenceData()
     {
-        try
+        await ExecuteWithOverlayAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Загрузка справочников...";
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            
             var cargoTypes = await _referenceService.GetCargoTypesAsync();
             CargoTypes.Clear();
             foreach (var cargoType in cargoTypes)
             {
                 CargoTypes.Add(cargoType);
             }
-            
-        }
-        catch (Exception ex)
-        {
-            SetError($"Ошибка при загрузке справочников: {ex.Message}");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+        }, "Загрузка справочников", "Ошибка при загрузке справочников");
     }
     
     [RelayCommand]
@@ -172,14 +158,8 @@ public partial class AddCargoViewModel : ViewModelBase
             return;
         }
 
-
-
-        try
+        await ExecuteWithOverlayAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Добавление груза...";
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            
             decimal? coming = null;
             decimal? consumption = null;
 
@@ -192,38 +172,21 @@ public partial class AddCargoViewModel : ViewModelBase
                 consumption = quantityValue;
             }
 
-            
             await _cargoService.AddCargoOperationAsync(
                 _platformId,
                 SelectedCargoType!.Id,
                 coming,
                 consumption,
-                OperationDate
+                GetCreatedAtUtc()
             );
-            
-            _logger.LogInformation("Груз успешно добавлен");
             
             var operationType = SelectedOperationType?.Name ?? "операция";
             var cargoType = SelectedCargoType?.Name ?? "груз";
             var message = $"Успешно добавлен {operationType} груза '{cargoType}' в количестве {quantityValue:N3} тонн";
-            await _dialogService.ShowMessageAsync("Успех", message);
+            await ShowSuccessAsync(message);
             
             CloseWindow(true);
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError(ex, "Ошибка при добавлении груза: {Message}", ex.Message);
-            await _dialogService.ShowMessageAsync("Ошибка", ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Неожиданная ошибка при добавлении груза: {Message}", ex.Message);
-            await _dialogService.ShowMessageAsync("Ошибка", $"Неожиданная ошибка: {ex.Message}");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+        }, "Добавление груза", "Ошибка при добавлении груза");
     }
     
     [RelayCommand]
@@ -232,10 +195,24 @@ public partial class AddCargoViewModel : ViewModelBase
         CloseWindow(false);
     }
     
-    public event Action<bool>? WindowClosed;
-    
-    private void CloseWindow(bool result)
+    private async Task<bool> ExecuteWithOverlayAsync(Func<Task> action, string loadingText, string errorPrefix)
     {
-        WindowClosed?.Invoke(result);
+        try
+        {
+            LoadingOverlay.LoadingText = loadingText;
+            LoadingOverlay.IsVisible = true;
+            ClearError();
+            await action();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync($"{errorPrefix}: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            LoadingOverlay.IsVisible = false;
+        }
     }
 } 

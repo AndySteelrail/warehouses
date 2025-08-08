@@ -6,26 +6,23 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.ViewModels.Base;
 
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
 /// ViewModel для создания пикета
 /// </summary>
-public partial class CreatePicketViewModel : ViewModelBase
+public partial class CreatePicketViewModel : NameViewModelBase
 {
     private readonly IPicketService _picketService;
     private readonly IPlatformService _platformService;
-    private readonly IDialogService _dialogService;
     private readonly ILogger<CreatePicketViewModel> _logger;
     private readonly int _warehouseId;
     
-    private string _picketName = string.Empty;
     private Platform? _selectedPlatform;
     private bool _createNewPlatform;
     private string _newPlatformName = string.Empty;
-    private DateTime _createdAt = DateTime.Now;
-    private string _createdAtText;
     
     public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
@@ -34,29 +31,22 @@ public partial class CreatePicketViewModel : ViewModelBase
         IPlatformService platformService,
         IDialogService dialogService,
         int warehouseId,
-        ILogger<CreatePicketViewModel> logger)
+        ILogger<CreatePicketViewModel> logger) : base(dialogService)
     {
         _picketService = picketService;
         _platformService = platformService;
-        _dialogService = dialogService;
         _logger = logger;
         _warehouseId = warehouseId;
         
         AvailablePlatforms = new ObservableCollection<Platform>();
-        
-        _createdAtText = _createdAt.ToString("yyyy-MM-dd HH:mm:ss");
         
         _ = LoadAvailablePlatformsAsync();
     }
     
     public string PicketName
     {
-        get => _picketName;
-        set
-        {
-            SetProperty(ref _picketName, value);
-            OnPropertyChanged(nameof(CanCreate));
-        }
+        get => Name;
+        set => Name = value;
     }
     
     public ObservableCollection<Platform> AvailablePlatforms { get; }
@@ -96,32 +86,11 @@ public partial class CreatePicketViewModel : ViewModelBase
         }
     }
     
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
-    
-    public string CreatedAtText
-    {
-        get => _createdAtText;
-        set
-        {
-            if (SetProperty(ref _createdAtText, value))
-            {
-                if (DateTime.TryParse(value, out var parsedDate))
-                {
-                    _createdAt = parsedDate;
-                }
-            }
-        }
-    }
-    
-    public bool CanCreate => !string.IsNullOrWhiteSpace(PicketName) && 
+    public override bool CanCreate => base.CanCreate && 
                            (SelectedPlatform != null || 
                             (CreateNewPlatform && !string.IsNullOrWhiteSpace(NewPlatformName)));
     
-    public event Action<bool>? WindowClosed;
+    // событие закрытия унаследовано из ModalViewModelBase
     
     private async Task LoadAvailablePlatformsAsync()
     {
@@ -158,7 +127,7 @@ public partial class CreatePicketViewModel : ViewModelBase
     [RelayCommand]
     private async Task Create()
     {
-        if (!CanCreate)
+        if (!CanCreate || !ValidateName())
         {
             _logger.LogWarning("Попытка создать пикет без заполнения обязательных полей");
             SetError("Заполните все обязательные поля");
@@ -176,7 +145,7 @@ public partial class CreatePicketViewModel : ViewModelBase
             int? warehouseId = CreateNewPlatform ? _warehouseId : null;
             string? newPlatformName = CreateNewPlatform ? NewPlatformName.Trim() : null;
             
-            var picket = await _picketService.CreatePicketAsync(platformId, warehouseId, PicketName.Trim(), newPlatformName, CreatedAt);
+            var picket = await _picketService.CreatePicketAsync(platformId, warehouseId, GetCleanedName(), newPlatformName, GetCreatedAtUtc());
             
             if (picket != null)
             {
@@ -197,7 +166,7 @@ public partial class CreatePicketViewModel : ViewModelBase
                     message += $" на время {CreatedAt:yyyy-MM-dd HH:mm:ss}";
                 }
                 
-                await _dialogService.ShowMessageAsync("Успех", message);
+                await ShowSuccessAsync("Успех", message);
                 
                 CloseWindow(true);
                 return;
@@ -223,10 +192,5 @@ public partial class CreatePicketViewModel : ViewModelBase
     private void Cancel()
     {
         CloseWindow(false);
-    }
-    
-    private void CloseWindow(bool result)
-    {
-        WindowClosed?.Invoke(result);
     }
 } 

@@ -8,23 +8,20 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.ViewModels.Base;
 
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
 /// ViewModel для создания площадки
 /// </summary>
-public class CreatePlatformViewModel : ViewModelBase
+public class CreatePlatformViewModel : NameViewModelBase
 {
     private readonly IPlatformService _platformService;
     private readonly IPicketService _picketService;
-    private readonly IDialogService _dialogService;
     private readonly ILogger<CreatePlatformViewModel> _logger;
 
-    private string _platformName = string.Empty;
     private ObservableCollection<PicketSelectionItem> _availablePickets = new();
-    private DateTime _createdAt = DateTime.Now;
-    private string _createdAtText;
     
     public LoadingOverlayViewModel LoadingOverlay { get; } = new();
 
@@ -32,26 +29,23 @@ public class CreatePlatformViewModel : ViewModelBase
         IPlatformService platformService,
         IPicketService picketService,
         IDialogService dialogService,
-        ILogger<CreatePlatformViewModel> logger)
+        ILogger<CreatePlatformViewModel> logger) : base(dialogService)
     {
         _platformService = platformService;
         _picketService = picketService;
-        _dialogService = dialogService;
         _logger = logger;
 
-        CreateCommand = new AsyncRelayCommand(CreateAsync, CanCreate);
+        CreateCommand = new AsyncRelayCommand(CreateAsync, CanCreatePlatform);
         CancelCommand = new RelayCommand(CancelAsync);
         LoadPicketsCommand = new AsyncRelayCommand(LoadPicketsAsync, CanLoadPickets);
-        
-        _createdAtText = _createdAt.ToString("yyyy-MM-dd HH:mm:ss");
     }
 
     public string PlatformName
     {
-        get => _platformName;
+        get => Name;
         set
         {
-            SetProperty(ref _platformName, value);
+            Name = value;
             CreateCommand.NotifyCanExecuteChanged();
             LoadPicketsCommand.NotifyCanExecuteChanged();
         }
@@ -63,29 +57,23 @@ public class CreatePlatformViewModel : ViewModelBase
         set => SetProperty(ref _availablePickets, value);
     }
     
-    public DateTime CreatedAt
+    public new DateTime CreatedAt
     {
-        get => _createdAt;
+        get => base.CreatedAt;
         set
         {
-            SetProperty(ref _createdAt, value);
+            base.CreatedAt = value;
             LoadPicketsCommand.NotifyCanExecuteChanged();
         }
     }
     
-    public string CreatedAtText
+    public new string CreatedAtText
     {
-        get => _createdAtText;
+        get => base.CreatedAtText;
         set
         {
-            if (SetProperty(ref _createdAtText, value))
-            {
-                if (DateTime.TryParse(value, out var parsedDate))
-                {
-                    _createdAt = parsedDate;
-                    LoadPicketsCommand.NotifyCanExecuteChanged();
-                }
-            }
+            base.CreatedAtText = value;
+            LoadPicketsCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -97,34 +85,20 @@ public class CreatePlatformViewModel : ViewModelBase
 
     public int WarehouseId { get; set; }
 
-    public event Action<bool>? WindowClosed;
 
     public async Task LoadPicketsAsync()
     {
-        try
+        await ExecuteWithLoadingAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Загрузка пикетов...";
-            LoadingOverlay.IsVisible = true;
-            
-            // Используем время создания площадки для получения актуального списка пикетов
             var pickets = await _picketService.GetPicketsByWarehouseAsync(WarehouseId, CreatedAt);
-            var picketItems = pickets.Select(p => 
+            var picketItems = pickets.Select(p =>
             {
                 var item = new PicketSelectionItem { Picket = p, IsSelected = false };
                 item.PropertyChanged += OnPicketSelectionChanged;
                 return item;
             }).ToList();
             AvailablePickets = new ObservableCollection<PicketSelectionItem>(picketItems);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при загрузке пикетов для склада {WarehouseId} на время {CreatedAt}", WarehouseId, CreatedAt);
-            await _dialogService.ShowMessageAsync("Ошибка", "Не удалось загрузить список пикетов");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+        }, "Загрузка пикетов", "Не удалось загрузить список пикетов");
     }
 
     private void OnPicketSelectionChanged(object? sender, PropertyChangedEventArgs e)
@@ -155,45 +129,30 @@ public class CreatePlatformViewModel : ViewModelBase
 
     private async Task CreateAsync()
     {
-        try
+        await ExecuteWithLoadingAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Создание площадки...";
-            LoadingOverlay.IsVisible = true;
-            
             var selectedPickets = AvailablePickets.Where(p => p.IsSelected).Select(p => p.Picket).ToList();
             if (selectedPickets.Count == 0)
             {
-                await _dialogService.ShowMessageAsync("Ошибка", "Необходимо выбрать хотя бы один пикет");
+                await ShowErrorAsync("Необходимо выбрать хотя бы один пикет");
                 return;
             }
 
             var picketIds = selectedPickets.Select(p => p.Id).ToList();
-            var platform = await _platformService.CreatePlatformWithPicketsAsync(WarehouseId, PlatformName, picketIds, CreatedAt);
+            var platform = await _platformService.CreatePlatformWithPicketsAsync(WarehouseId, PlatformName.Trim(), picketIds, GetCreatedAtUtc());
 
-            if (platform != null)
+            if (platform == null)
             {
-                _logger.LogInformation("Площадка успешно создана: PlatformId={PlatformId}", platform.Id);
-                await _dialogService.ShowMessageAsync("Успех", $"Площадка '{platform.Name}' успешно создана");
-                WindowClosed?.Invoke(true);
+                throw new Exception("Не удалось создать площадку");
             }
-            else
-            {
-                _logger.LogError("Создание площадки завершилось неудачно. Получен null результат");
-                await _dialogService.ShowMessageAsync("Ошибка", "Не удалось создать площадку");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при создании площадки");
-            await _dialogService.ShowMessageAsync("Ошибка", ex.Message);
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+
+            _logger.LogInformation("Площадка успешно создана: PlatformId={PlatformId}", platform.Id);
+            await ShowSuccessAsync($"Площадка '{platform.Name}' успешно создана");
+            CloseWindow(true);
+        }, "Создание площадки", "Ошибка при создании площадки");
     }
 
-    private bool CanCreate()
+    private bool CanCreatePlatform()
     {
         var selectedCount = AvailablePickets.Count(p => p.IsSelected);
         return !string.IsNullOrWhiteSpace(PlatformName) && selectedCount > 0 && !LoadingOverlay.IsVisible;
@@ -206,6 +165,28 @@ public class CreatePlatformViewModel : ViewModelBase
 
     private void CancelAsync()
     {
-        WindowClosed?.Invoke(false);
+        CloseWindow(false);
+    }
+
+    private async Task<bool> ExecuteWithLoadingAsync(Func<Task> operation, string loadingText, string errorMessage)
+    {
+        try
+        {
+            LoadingOverlay.LoadingText = loadingText;
+            LoadingOverlay.IsVisible = true;
+            ClearError();
+            await operation();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, errorMessage);
+            await ShowErrorAsync($"{errorMessage}: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            LoadingOverlay.IsVisible = false;
+        }
     }
 } 

@@ -6,7 +6,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для отображения деталей элемента
 /// </summary>
-public partial class ItemDetailsViewModel : ViewModelBase
+public class ItemDetailsViewModel : ViewModelBase
 {
     private TreeNode? _selectedNode;
 

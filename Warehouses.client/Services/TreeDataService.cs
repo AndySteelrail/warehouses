@@ -73,7 +73,9 @@ public class TreeDataService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки иерархии складов: {ex}");
+            // централизованная обработка: отдадим пустое дерево, логировать будет вызывающая сторона
+            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки иерархии складов: {ex.Message}");
+            return new ObservableCollection<TreeNode>();
         }
 
         return warehousesTree;

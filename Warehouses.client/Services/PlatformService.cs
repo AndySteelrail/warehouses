@@ -25,47 +25,26 @@ public class PlatformService : IPlatformService
     
     public async Task<IEnumerable<Platform>> GetPlatformsByWarehouseAsync(int warehouseId)
     {
-        try
-        {
-            // Получаем все площадки и фильтруем по складу
-            var allPlatformDtos = await _apiService.GetAsync<List<PlatformDTO>>("platforms");
-            if (allPlatformDtos == null)
-                return Enumerable.Empty<Platform>();
-            
-            var warehousePlatforms = allPlatformDtos.Where(p => p.WarehouseId == warehouseId);
-            return warehousePlatforms.Select(MapToPlatform);
-        }
-        catch (Exception)
-        {
+        // Получаем все площадки и фильтруем по складу
+        var allPlatformDtos = await _apiService.GetAsync<List<PlatformDTO>>("platforms");
+        if (allPlatformDtos == null)
             return Enumerable.Empty<Platform>();
-        }
+        
+        var warehousePlatforms = allPlatformDtos.Where(p => p.WarehouseId == warehouseId);
+        return warehousePlatforms.Select(MapToPlatform);
     }
     
     public async Task<Platform?> GetPlatformAsync(int platformId)
     {
-        try
-        {
-            var platformDto = await _apiService.GetAsync<PlatformDTO>($"platforms/{platformId}");
-            return platformDto != null ? MapToPlatform(platformDto) : null;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
+        var platformDto = await _apiService.GetAsync<PlatformDTO>($"platforms/{platformId}");
+        return platformDto != null ? MapToPlatform(platformDto) : null;
     }
     
 
     public async Task<bool> DeletePlatformAsync(int platformId)
     {
-        try
-        {
-            await _apiService.DeleteAsync($"platforms/{platformId}");
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        await _apiService.DeleteAsync($"platforms/{platformId}");
+        return true;
     }
     
     public async Task<bool> UpdatePlatformNameAsync(int platformId, string name)

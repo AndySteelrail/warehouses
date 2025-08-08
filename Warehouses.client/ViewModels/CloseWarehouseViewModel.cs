@@ -4,21 +4,18 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.ViewModels.Base;
 
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
 /// ViewModel для закрытия склада
 /// </summary>
-public partial class CloseWarehouseViewModel : ViewModelBase
+public partial class CloseWarehouseViewModel : DateTimeViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
-    private readonly IDialogService _dialogService;
     private readonly ILogger<CloseWarehouseViewModel> _logger;
     private readonly Warehouse _warehouse;
-    
-    private DateTime _closedAt = DateTime.Now;
-    private string _closedAtText;
     
     public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
@@ -26,79 +23,49 @@ public partial class CloseWarehouseViewModel : ViewModelBase
         IWarehouseService warehouseService,
         IDialogService dialogService,
         ILogger<CloseWarehouseViewModel> logger,
-        Warehouse warehouse)
+        Warehouse warehouse) : base(dialogService)
     {
         _warehouseService = warehouseService;
-        _dialogService = dialogService;
         _logger = logger;
         _warehouse = warehouse;
-        _closedAtText = _closedAt.ToString("yyyy-MM-dd HH:mm:ss");
     }
     
     public string WarehouseName => _warehouse.Name;
     
     public DateTime ClosedAt
     {
-        get => _closedAt;
-        set => SetProperty(ref _closedAt, value);
+        get => CreatedAt;
+        set => CreatedAt = value;
     }
     
     public string ClosedAtText
     {
-        get => _closedAtText;
-        set
-        {
-            if (SetProperty(ref _closedAtText, value))
-            {
-                if (DateTime.TryParse(value, out var parsedDate))
-                {
-                    _closedAt = parsedDate;
-                }
-            }
-        }
+        get => CreatedAtText;
+        set => CreatedAtText = value;
     }
-    
-    public event Action<bool>? WindowClosed;
     
     [RelayCommand]
     private async Task Close()
     {
-        try
+        await ExecuteWithOverlayAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Закрытие склада...";
-            LoadingOverlay.IsVisible = true;
-            ClearError();
+            var success = await _warehouseService.CloseWarehouseAsync(_warehouse.Id, GetCreatedAtUtc());
+            if (!success)
+            {
+                throw new Exception("Не удалось закрыть склад");
+            }
 
-            var success = await _warehouseService.CloseWarehouseAsync(_warehouse.Id, ClosedAt);
-            
-            if (success)
+            _logger.LogInformation("Склад успешно закрыт: Id={Id}, Name={Name}, ClosedAt={ClosedAt}",
+                _warehouse.Id, _warehouse.Name, ClosedAt);
+
+            var message = $"Склад '{_warehouse.Name}' успешно закрыт";
+            if (ClosedAt != DateTime.Now)
             {
-                _logger.LogInformation("Склад успешно закрыт: Id={Id}, Name={Name}, ClosedAt={ClosedAt}", 
-                    _warehouse.Id, _warehouse.Name, ClosedAt);
-                
-                var message = $"Склад '{_warehouse.Name}' успешно закрыт";
-                if (ClosedAt != DateTime.Now)
-                {
-                    message += $" на время {ClosedAt:yyyy-MM-dd HH:mm:ss}";
-                }
-                await _dialogService.ShowMessageAsync("Успех", message);
-                
-                CloseWindow(true);
+                message += $" на время {ClosedAt:yyyy-MM-dd HH:mm:ss}";
             }
-            else
-            {
-                SetError("Не удалось закрыть склад");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при закрытии склада: {Message}", ex.Message);
-            SetError($"Ошибка при закрытии склада: {ex.Message}");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+            await ShowSuccessAsync(message);
+            CloseWindow(true);
+        }, "Закрытие склада", "Ошибка при закрытии склада");
     }
     
     [RelayCommand]
@@ -106,9 +73,26 @@ public partial class CloseWarehouseViewModel : ViewModelBase
     {
         CloseWindow(false);
     }
-    
-    private void CloseWindow(bool result)
+
+    private async Task<bool> ExecuteWithOverlayAsync(Func<Task> action, string loadingText, string errorPrefix)
     {
-        WindowClosed?.Invoke(result);
+        try
+        {
+            LoadingOverlay.LoadingText = loadingText;
+            LoadingOverlay.IsVisible = true;
+            ClearError();
+            await action();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, errorPrefix);
+            await ShowErrorAsync($"{errorPrefix}: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            LoadingOverlay.IsVisible = false;
+        }
     }
 }

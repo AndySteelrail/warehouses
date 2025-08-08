@@ -1,5 +1,6 @@
 using System;
 using Warehouses.client.Services;
+using Warehouses.client.Common;
 
 namespace Warehouses.client.ViewModels.Base;
 
@@ -9,11 +10,11 @@ namespace Warehouses.client.ViewModels.Base;
 public abstract class DateTimeViewModelBase : ModalViewModelBase
 {
     private DateTime _createdAt = DateTime.Now;
-    private string _createdAtText = string.Empty;
+    private string _createdAtText;
     
     protected DateTimeViewModelBase(IDialogService dialogService) : base(dialogService)
     {
-        _createdAtText = _createdAt.ToString("yyyy-MM-dd HH:mm:ss");
+        _createdAtText = _createdAt.ToString(Formatting.DateTimeHuman);
     }
     
     public DateTime CreatedAt

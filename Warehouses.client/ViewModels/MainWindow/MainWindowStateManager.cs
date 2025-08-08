@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.Common;
 
 namespace Warehouses.client.ViewModels;
 
@@ -21,12 +22,9 @@ public class MainWindowStateManager
     public MainWindowStateManager(IReferenceService referenceService)
     {
         _referenceService = referenceService;
-        _selectedDateText = _selectedDate.ToString("yyyy-MM-dd HH:mm:ss");
+        _selectedDateText = _selectedDate.ToString(Formatting.DateTimeHuman);
     }
-
-    /// <summary>
-    /// Выбранная дата для фильтрации
-    /// </summary>
+    
     public DateTime SelectedDate
     {
         get => _selectedDate;
@@ -35,14 +33,11 @@ public class MainWindowStateManager
             if (_selectedDate != value)
             {
                 _selectedDate = value;
-                _selectedDateText = _selectedDate.ToString("yyyy-MM-dd HH:mm:ss");
+                _selectedDateText = _selectedDate.ToString(Formatting.DateTimeHuman);
             }
         }
     }
-
-    /// <summary>
-    /// Текстовое представление выбранной даты
-    /// </summary>
+    
     public string SelectedDateText
     {
         get => _selectedDateText;
@@ -58,10 +53,7 @@ public class MainWindowStateManager
             }
         }
     }
-
-    /// <summary>
-    /// Выбранный тип груза для фильтрации
-    /// </summary>
+    
     public CargoType? SelectedCargoType
     {
         get => _selectedCargoType;
@@ -73,51 +65,34 @@ public class MainWindowStateManager
             }
         }
     }
-
-    /// <summary>
-    /// Список доступных типов грузов
-    /// </summary>
+    
     public ObservableCollection<CargoType> CargoTypes
     {
         get => _cargoTypes;
         set => _cargoTypes = value;
     }
 
-
-
-    /// <summary>
-    /// Загружает типы грузов
-    /// </summary>
+    
     public async Task LoadCargoTypesAsync()
     {
-        try
+        // Загружаем типы грузов (ошибку отдаст ApiService)
+        var cargoTypes = await _referenceService.GetCargoTypesAsync();
+        CargoTypes.Clear();
+        
+        var allCargoType = new CargoType { Id = 0, Name = "Все грузы" };
+        CargoTypes.Add(allCargoType);
+        
+        foreach (var cargoType in cargoTypes)
         {
-            // Загружаем типы грузов
-            var cargoTypes = await _referenceService.GetCargoTypesAsync();
-            CargoTypes.Clear();
-            
-            var allCargoType = new CargoType { Id = 0, Name = "Все грузы" };
-            CargoTypes.Add(allCargoType);
-            
-            foreach (var cargoType in cargoTypes)
-            {
-                CargoTypes.Add(cargoType);
-            }
-            
-            _selectedCargoType = allCargoType;
+            CargoTypes.Add(cargoType);
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error loading cargo types: {ex}");
-        }
+        
+        _selectedCargoType = allCargoType;
     }
-
-    /// <summary>
-    /// Обновляет текст даты
-    /// </summary>
+    
     public void UpdateDateText()
     {
-        _selectedDateText = _selectedDate.ToString("yyyy-MM-dd HH:mm:ss");
+        _selectedDateText = _selectedDate.ToString(Formatting.DateTimeHuman);
     }
 
 }

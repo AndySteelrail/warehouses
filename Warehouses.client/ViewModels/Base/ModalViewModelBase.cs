@@ -11,6 +11,8 @@ namespace Warehouses.client.ViewModels.Base;
 public abstract class ModalViewModelBase : ViewModelBase
 {
     protected readonly IDialogService _dialogService;
+    private const string DefaultSuccessTitle = "Успех";
+    private const string DefaultErrorTitle = "Ошибка";
     
     protected ModalViewModelBase(IDialogService dialogService)
     {
@@ -33,4 +35,7 @@ public abstract class ModalViewModelBase : ViewModelBase
     {
         await _dialogService.ShowMessageAsync(title, message);
     }
+
+    protected Task ShowSuccessAsync(string message) => _dialogService.ShowMessageAsync(DefaultSuccessTitle, message);
+    protected Task ShowErrorAsync(string message) => _dialogService.ShowMessageAsync(DefaultErrorTitle, message);
 }

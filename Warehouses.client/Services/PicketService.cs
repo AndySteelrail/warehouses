@@ -25,29 +25,15 @@ public class PicketService : IPicketService
     
     public async Task<IEnumerable<Picket>> GetPicketsByPlatformAsync(int platformId)
     {
-        try
-        {
-            var picketDtos = await _apiService.GetAsync<List<PicketDTO>>($"pickets/platform/{platformId}");
-            return picketDtos?.Select(MapToPicket) ?? Enumerable.Empty<Picket>();
-        }
-        catch (Exception)
-        {
-            return Enumerable.Empty<Picket>();
-        }
+        var picketDtos = await _apiService.GetAsync<List<PicketDTO>>($"pickets/platform/{platformId}");
+        return picketDtos?.Select(MapToPicket) ?? Enumerable.Empty<Picket>();
     }
     
     public async Task<IEnumerable<Picket>> GetPicketsByPlatformAtTimeAsync(int platformId, DateTime time)
     {
-        try
-        {
-            var utcTime = time.ToUniversalTime();
-            var picketDtos = await _apiService.GetAsync<List<PicketDTO>>($"pickets/platform/{platformId}/time?time={utcTime:yyyy-MM-ddTHH:mm:ss}Z");
-            return picketDtos?.Select(MapToPicket) ?? Enumerable.Empty<Picket>();
-        }
-        catch (Exception)
-        {
-            return Enumerable.Empty<Picket>();
-        }
+        var utcTime = time.ToUniversalTime();
+        var picketDtos = await _apiService.GetAsync<List<PicketDTO>>($"pickets/platform/{platformId}/time?time={utcTime:yyyy-MM-ddTHH:mm:ss}Z");
+        return picketDtos?.Select(MapToPicket) ?? Enumerable.Empty<Picket>();
     }
     
     public async Task<Picket?> CreatePicketAsync(int? platformId, int? warehouseId, string name, string? newPlatformName = null, DateTime? createdAt = null)
@@ -144,19 +130,12 @@ public class PicketService : IPicketService
 
     public async Task<bool> ClosePicketAsync(int id, DateTime? closedAt = null)
     {
-        try
-        {
-            var closeDto = new ClosePicketDTO 
-            { 
-                ClosedAt = closedAt?.ToUniversalTime()
-            };
-            var result = await _apiService.PostAsync<object>($"pickets/{id}/close", closeDto);
-            return result != null;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        var closeDto = new ClosePicketDTO 
+        { 
+            ClosedAt = closedAt?.ToUniversalTime()
+        };
+        var result = await _apiService.PostAsync<object>($"pickets/{id}/close", closeDto);
+        return result != null;
     }
 
 
