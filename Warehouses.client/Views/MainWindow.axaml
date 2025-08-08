@@ -55,7 +55,9 @@
                         BorderBrush="#2E86AB"
                         BorderThickness="1"
                         CornerRadius="4"
-                        Margin="0,0,20,0"/>
+                        Margin="0,0,20,0"
+                        Height="32"
+                        VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Column="2" 
                           Text="📦 Тип груза:" 
@@ -72,7 +74,8 @@
                          BorderBrush="#2E86AB"
                          BorderThickness="1"
                          CornerRadius="4"
-                         Margin="0,0,20,0">
+                         Margin="0,0,20,0"
+                         VerticalAlignment="Center" >
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
@@ -83,16 +86,20 @@
                 <StackPanel Grid.Column="4" 
                            Orientation="Horizontal" 
                            HorizontalAlignment="Right">
-                    <Button Content="🔄 Обновить" 
-                            Command="{Binding RefreshCommand}"
-                            IsEnabled="{Binding !IsBusy}"
-                            Background="#4CAF50"
-                            Foreground="White"
-                            BorderBrush="#45A049"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="12,6"
-                            FontWeight="SemiBold"/>
+                                         <Button Command="{Binding RefreshCommand}"
+                             IsEnabled="{Binding !IsBusy}"
+                             Background="#4CAF50"
+                             Foreground="White"
+                             BorderBrush="#45A049"
+                             BorderThickness="1"
+                             CornerRadius="4"
+                             Padding="12,6"
+                             FontWeight="SemiBold">
+                         <TextBlock Text="🔄 Обновить" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                         <ToolTip.Tip>
+                             <TextBlock Text="Обновить данные"/>
+                         </ToolTip.Tip>
+                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -226,55 +233,115 @@
                                                     HorizontalAlignment="Right">
                                         
                                         <!-- Кнопки для складов -->
-                                        <Button Content="✏️" 
-                                                Command="{Binding EditCommand}"
+                                        <Button Command="{Binding EditCommand}"
                                                 Width="32" Height="32"
-                                                Background="Transparent"
-                                                BorderThickness="0"
+                                                Background="#F8F9FA"
+                                                BorderBrush="#DEE2E6"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
                                                 Margin="0,0,4,0"
                                                 FontSize="16"
                                                 Padding="5"
-                                                IsVisible="{Binding CanEdit}"/>
+                                                IsVisible="{Binding CanEdit}">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#E9ECEF"/>
+                                                    <Setter Property="BorderBrush" Value="#ADB5BD"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <TextBlock Text="✏️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Редактировать"/>
+                                            </ToolTip.Tip>
+                                        </Button>
                                         
-                                        <Button Content="🗺️" 
-                                                Command="{Binding CreatePicketCommand}"
+                                        <Button Command="{Binding CreatePicketCommand}"
                                                 Width="32" Height="32"
-                                                Background="Transparent"
-                                                BorderThickness="0"
+                                                Background="#F8F9FA"
+                                                BorderBrush="#DEE2E6"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
                                                 Margin="0,0,4,0"
                                                 FontSize="16"
                                                 Padding="5"
-                                                IsVisible="{Binding CanCreatePicket}"/>
+                                                IsVisible="{Binding CanCreatePicket}">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#E9ECEF"/>
+                                                    <Setter Property="BorderBrush" Value="#ADB5BD"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <TextBlock Text="🗺️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Создать пикет"/>
+                                            </ToolTip.Tip>
+                                        </Button>
                                         
-                                        <Button Content="🏗️" 
-                                                Command="{Binding CreatePlatformCommand}"
+                                        <Button Command="{Binding CreatePlatformCommand}"
                                                 Width="32" Height="32"
-                                                Background="Transparent"
-                                                BorderThickness="0"
+                                                Background="#F8F9FA"
+                                                BorderBrush="#DEE2E6"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
                                                 Margin="0,0,4,0"
                                                 FontSize="16"
                                                 Padding="5"
-                                                IsVisible="{Binding CanCreatePlatform}"/>
+                                                IsVisible="{Binding CanCreatePlatform}">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#E9ECEF"/>
+                                                    <Setter Property="BorderBrush" Value="#ADB5BD"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <TextBlock Text="🏗️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Создать площадку"/>
+                                            </ToolTip.Tip>
+                                        </Button>
                                         
-                                        <Button Content="🗑️" 
-                                                Command="{Binding DeleteCommand}"
+                                        <Button Command="{Binding DeleteCommand}"
                                                 Width="32" Height="32"
-                                                Background="Transparent"
-                                                BorderThickness="0"
+                                                Background="#F8F9FA"
+                                                BorderBrush="#DEE2E6"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
                                                 Margin="0,0,4,0"
                                                 FontSize="16"
                                                 Padding="5"
-                                                IsVisible="{Binding CanDelete}"/>
+                                                IsVisible="{Binding CanDelete}">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#E9ECEF"/>
+                                                    <Setter Property="BorderBrush" Value="#ADB5BD"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <TextBlock Text="🗑️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Удалить"/>
+                                            </ToolTip.Tip>
+                                        </Button>
                                         
                                         <!-- Кнопка добавления груза для площадок -->
-                                        <Button Content="📦" 
-                                                Command="{Binding AddCargoCommand}"
+                                        <Button Command="{Binding AddCargoCommand}"
                                                 Width="32" Height="32"
-                                                Background="Transparent"
-                                                BorderThickness="0"
+                                                Background="#F8F9FA"
+                                                BorderBrush="#DEE2E6"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
                                                 FontSize="16"
                                                 Padding="5"
-                                                IsVisible="{Binding CanAddCargo}"/>
+                                                IsVisible="{Binding CanAddCargo}">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#E9ECEF"/>
+                                                    <Setter Property="BorderBrush" Value="#ADB5BD"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <TextBlock Text="📦" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Добавить груз"/>
+                                            </ToolTip.Tip>
+                                        </Button>
                                         </StackPanel>
                                     </Border>
                                 </Grid>

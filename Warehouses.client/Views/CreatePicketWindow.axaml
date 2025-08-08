@@ -86,8 +86,7 @@
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right" 
                         Margin="0,20,0,0">
-                <Button Content="Создать" 
-                        Command="{Binding CreateCommand}"
+                <Button Command="{Binding CreateCommand}"
                         IsEnabled="{Binding CanCreate}"
                         Background="#4CAF50"
                         Foreground="White"
@@ -96,17 +95,26 @@
                         CornerRadius="4"
                         Padding="20,8"
                         FontWeight="SemiBold"
-                        Margin="0,0,10,0"/>
+                        Margin="0,0,10,0">
+                    <TextBlock Text="Создать" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <ToolTip.Tip>
+                        <TextBlock Text="Создать пикет"/>
+                    </ToolTip.Tip>
+                </Button>
                 
-                <Button Content="Отмена" 
-                        Command="{Binding CancelCommand}"
+                <Button Command="{Binding CancelCommand}"
                         Background="#6C757D"
                         Foreground="White"
                         BorderBrush="#5A6268"
                         BorderThickness="1"
                         CornerRadius="4"
                         Padding="20,8"
-                        FontWeight="SemiBold"/>
+                        FontWeight="SemiBold">
+                    <TextBlock Text="Отмена" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <ToolTip.Tip>
+                        <TextBlock Text="Отменить создание"/>
+                    </ToolTip.Tip>
+                </Button>
             </StackPanel>
             
             <!-- Индикатор загрузки -->

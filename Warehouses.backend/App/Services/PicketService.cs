@@ -67,7 +67,7 @@ public class PicketService : IPicketService
                 var logPlatformName = newPlatformName ?? "не указано";
                 _logger.LogInformation($"Создаем новую площадку: WarehouseId={warehouseId}, Name={logPlatformName}");
                 
-                var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId.Value);
+                var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId!.Value);
                 if (warehouse == null)
                 {
                     _logger.LogError($"Склад не найден: WarehouseId={warehouseId}");

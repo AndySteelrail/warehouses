@@ -46,17 +46,25 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right" 
                     Margin="0,30,0,30">
-            <Button Content="Отмена" 
-                    Command="{Binding CancelCommand}"
+            <Button Command="{Binding CancelCommand}"
                     Margin="0,0,10,0"
-                    Padding="20,8"/>
+                    Padding="20,8">
+                <TextBlock Text="Отмена" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <ToolTip.Tip>
+                    <TextBlock Text="Отменить создание"/>
+                </ToolTip.Tip>
+            </Button>
             
-            <Button Content="Создать" 
-                    Command="{Binding CreateCommand}"
+            <Button Command="{Binding CreateCommand}"
                     IsEnabled="{Binding CanCreate}"
                     Background="#4CAF50"
                     Foreground="White"
-                    Padding="20,8"/>
+                    Padding="20,8">
+                <TextBlock Text="Создать" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <ToolTip.Tip>
+                    <TextBlock Text="Создать склад"/>
+                </ToolTip.Tip>
+            </Button>
         </StackPanel>
 
         <!-- Сообщения об ошибках -->

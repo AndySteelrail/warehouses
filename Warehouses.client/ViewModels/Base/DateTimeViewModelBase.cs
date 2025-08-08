@@ -1,0 +1,46 @@
+using System;
+using Warehouses.client.Services;
+
+namespace Warehouses.client.ViewModels.Base;
+
+/// <summary>
+/// Базовый класс для ViewModels с функционалом работы с датами
+/// </summary>
+public abstract class DateTimeViewModelBase : ModalViewModelBase
+{
+    private DateTime _createdAt = DateTime.Now;
+    private string _createdAtText = string.Empty;
+    
+    protected DateTimeViewModelBase(IDialogService dialogService) : base(dialogService)
+    {
+        _createdAtText = _createdAt.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+    
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
+    
+    public string CreatedAtText
+    {
+        get => _createdAtText;
+        set
+        {
+            if (SetProperty(ref _createdAtText, value))
+            {
+                if (DateTime.TryParse(value, out var parsedDate))
+                {
+                    CreatedAt = parsedDate;
+                }
+            }
+        }
+    }
+    
+    protected DateTime GetCreatedAtUtc()
+    {
+        return CreatedAt.Kind == DateTimeKind.Unspecified 
+            ? DateTime.SpecifyKind(CreatedAt, DateTimeKind.Local).ToUniversalTime()
+            : CreatedAt.ToUniversalTime();
+    }
+}

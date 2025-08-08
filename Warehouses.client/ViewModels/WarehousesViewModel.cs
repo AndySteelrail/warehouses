@@ -2,22 +2,25 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using Warehouses.client.Models;
 using Warehouses.client.Services;
+using Warehouses.client.ViewModels.Base;
 
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
 /// ViewModel для управления списком складов
 /// </summary>
-public partial class WarehousesViewModel : ViewModelBase
+public partial class WarehousesViewModel : LoadingViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
     private ObservableCollection<Warehouse> _warehouses = new();
     private Warehouse? _selectedWarehouse;
     private string _newWarehouseName = string.Empty;
     
-    public WarehousesViewModel(IWarehouseService warehouseService)
+    public WarehousesViewModel(IWarehouseService warehouseService, ILogger<WarehousesViewModel> logger)
+        : base(logger)
     {
         _warehouseService = warehouseService;
         LoadWarehousesCommand.ExecuteAsync(null);
@@ -46,11 +49,8 @@ public partial class WarehousesViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoadWarehouses()
     {
-        try
+        await ExecuteWithLoadingAsync(async () =>
         {
-            IsBusy = true;
-            ClearError();
-
             var warehouses = await _warehouseService.GetAllWarehousesAsync();
             Warehouses.Clear();
             
@@ -58,15 +58,7 @@ public partial class WarehousesViewModel : ViewModelBase
             {
                 Warehouses.Add(warehouse);
             }
-        }
-        catch (Exception ex)
-        {
-            SetError($"Ошибка при загрузке складов: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        }, "Загрузка складов", "Ошибка при загрузке складов");
     }
     
     [RelayCommand]
@@ -78,30 +70,19 @@ public partial class WarehousesViewModel : ViewModelBase
             return;
         }
 
-        try
-        {
-            IsBusy = true;
-            ClearError();
-
-            var warehouse = await _warehouseService.CreateWarehouseAsync(NewWarehouseName.Trim());
+        var warehouse = await ExecuteWithLoadingAsync(
+            () => _warehouseService.CreateWarehouseAsync(NewWarehouseName.Trim()),
+            "Создание склада",
+            "Ошибка при создании склада");
             
-            if (warehouse != null)
-            {
-                Warehouses.Add(warehouse);
-                NewWarehouseName = string.Empty;
-            }
-            else
-            {
-                SetError("Не удалось создать склад");
-            }
-        }
-        catch (Exception ex)
+        if (warehouse != null)
         {
-            SetError($"Ошибка при создании склада: {ex.Message}");
+            Warehouses.Add(warehouse);
+            NewWarehouseName = string.Empty;
         }
-        finally
+        else
         {
-            IsBusy = false;
+            SetError("Не удалось создать склад");
         }
     }
     
