@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Warehouses.client.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="Warehouses.client.Views.WarehousesView"
+             x:DataType="vm:WarehousesViewModel">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Управление складами" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"/>
+
+        <!-- Панель создания нового склада -->
+        <Border Grid.Row="1" 
+                Background="#F5F5F5" 
+                BorderBrush="#DDDDDD" 
+                BorderThickness="1" 
+                CornerRadius="4" 
+                Padding="15" 
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" 
+                         Text="{Binding NewWarehouseName}" 
+                         Watermark="Введите название склада"
+                         Margin="0,0,10,0"/>
+
+                <Button Grid.Column="1" 
+                        Content="Создать склад" 
+                        Command="{Binding CreateWarehouseCommand}"
+                        IsEnabled="{Binding !IsBusy}"/>
+            </Grid>
+        </Border>
+
+        <!-- Список складов -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Таблица складов -->
+            <DataGrid Grid.Column="0" 
+                      ItemsSource="{Binding Warehouses}" 
+                      SelectedItem="{Binding SelectedWarehouse}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All"
+                      HeadersVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" 
+                                        Binding="{Binding Id}" 
+                                        Width="80"/>
+                    <DataGridTextColumn Header="Название" 
+                                        Binding="{Binding Name}" 
+                                        Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Панель действий -->
+            <StackPanel Grid.Column="1" 
+                        Margin="10,0,0,0" 
+                        VerticalAlignment="Top">
+                <Button Content="Обновить" 
+                        Command="{Binding LoadWarehousesCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        Margin="0,0,0,10"
+                        Padding="15,8"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Индикатор загрузки -->
+        <Border Grid.Row="2" 
+                Background="#80000000" 
+                IsVisible="{Binding IsBusy}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
+                <TextBlock Text="Загрузка..." 
+                          HorizontalAlignment="Center" 
+                          Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl> 

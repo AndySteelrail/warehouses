@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Warehouses.client.ViewModels"
+        xmlns:views="using:Warehouses.client.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="Warehouses.client.Views.AddCargoWindow"
+        x:DataType="vm:AddCargoViewModel"
+        Title="Добавление груза"
+        Width="500" Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Добавление груза на площадку" 
+                   FontSize="16" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"/>
+
+        <!-- Основной контент -->
+        <StackPanel Grid.Row="1">
+            <!-- Тип операции -->
+            <TextBlock Text="Тип операции:" 
+                       Margin="0,0,0,5"/>
+            <ComboBox ItemsSource="{Binding OperationTypes}"
+                      SelectedItem="{Binding SelectedOperationType}"
+                      DisplayMemberBinding="{Binding Name}"
+                      Margin="0,0,0,15"/>
+
+            <!-- Тип груза -->
+            <TextBlock Text="Тип груза:" 
+                       Margin="0,0,0,5"/>
+            <ComboBox ItemsSource="{Binding CargoTypes}"
+                      SelectedItem="{Binding SelectedCargoType}"
+                      DisplayMemberBinding="{Binding Name}"
+                      Margin="0,0,0,15"/>
+
+            <!-- Количество -->
+            <TextBlock Text="Количество:" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Quantity}" 
+                     Watermark="Введите количество"
+                     Margin="0,0,0,15"/>
+
+
+
+            <!-- Дата операции -->
+            <TextBlock Text="Дата операции:" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding OperationDateText}" 
+                     Watermark="2025-07-02 18:24:00"
+                     Margin="0,0,0,15"/>
+        </StackPanel>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,20,0,0">
+            <Button Content="Отмена" 
+                    Command="{Binding CancelCommand}"
+                    Margin="0,0,10,0"
+                    Padding="20,8"/>
+            
+            <Button Content="Добавить" 
+                    Command="{Binding AddCommand}"
+                    IsEnabled="{Binding CanAdd}"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    Padding="20,8"/>
+        </StackPanel>
+
+
+
+        <!-- Индикатор загрузки -->
+        <views:LoadingOverlay Grid.Row="1"
+                              DataContext="{Binding LoadingOverlay}"/>
+    </Grid>
+</Window> 

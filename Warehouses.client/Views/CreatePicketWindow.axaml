@@ -1,0 +1,117 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Warehouses.client.ViewModels"
+        xmlns:views="using:Warehouses.client.Views"
+        x:Class="Warehouses.client.Views.CreatePicketWindow"
+        x:DataType="vm:CreatePicketViewModel"
+        Title="Создать пикет"
+        Width="400" Height="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок -->
+            <TextBlock Grid.Row="0" 
+                       Text="Создание нового пикета" 
+                       FontSize="18" 
+                       FontWeight="Bold" 
+                       Margin="0,0,0,20"/>
+
+            <!-- Название пикета -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                <TextBlock Text="Название пикета:" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,5"/>
+                <TextBox Text="{Binding PicketName}" 
+                         Watermark="Введите название пикета"
+                         FontSize="14"/>
+            </StackPanel>
+
+            <!-- Выбор площадки -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                <TextBlock Text="Площадка:" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,5"/>
+                <ComboBox ItemsSource="{Binding AvailablePlatforms}"
+                          SelectedItem="{Binding SelectedPlatform}"
+                          DisplayMemberBinding="{Binding Name}"
+                          PlaceholderText="Выберите площадку или создайте новую"
+                          FontSize="14"/>
+            </StackPanel>
+
+            <!-- Создать новую площадку -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,15">
+                <CheckBox Content="Создать новую площадку" 
+                          IsChecked="{Binding CreateNewPlatform}"
+                          FontWeight="SemiBold"/>
+                <TextBox Text="{Binding NewPlatformName}" 
+                         Watermark="Название новой площадки"
+                         FontSize="14"
+                         Margin="20,5,0,0"
+                         IsVisible="{Binding CreateNewPlatform}"/>
+            </StackPanel>
+
+            <!-- Время создания -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,15">
+                            <TextBlock Text="Время создания:" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding CreatedAtText}" 
+                     Watermark="2025-07-02 18:24:00"
+                     FontSize="14"/>
+            </StackPanel>
+
+            <!-- Сообщения об ошибках -->
+            <TextBlock Grid.Row="5" 
+                       Text="{Binding ErrorMessage}" 
+                       Foreground="Red" 
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Top"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+            <!-- Кнопки -->
+            <StackPanel Grid.Row="6" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right" 
+                        Margin="0,20,0,0">
+                <Button Content="Создать" 
+                        Command="{Binding CreateCommand}"
+                        IsEnabled="{Binding CanCreate}"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        BorderBrush="#45A049"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="20,8"
+                        FontWeight="SemiBold"
+                        Margin="0,0,10,0"/>
+                
+                <Button Content="Отмена" 
+                        Command="{Binding CancelCommand}"
+                        Background="#6C757D"
+                        Foreground="White"
+                        BorderBrush="#5A6268"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="20,8"
+                        FontWeight="SemiBold"/>
+            </StackPanel>
+            
+            <!-- Индикатор загрузки -->
+            <views:LoadingOverlay Grid.Row="7"
+                                  DataContext="{Binding LoadingOverlay}"/>
+        </Grid>
+    </ScrollViewer>
+</Window> 

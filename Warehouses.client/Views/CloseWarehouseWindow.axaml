@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Warehouses.client.ViewModels"
+        xmlns:views="using:Warehouses.client.Views"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        x:Class="Warehouses.client.Views.CloseWarehouseWindow"
+        Title="Закрытие склада"
+        Width="400" Height="300"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:CloseWarehouseViewModel/>
+    </Design.DataContext>
+
+    <Grid x:DataType="vm:CloseWarehouseViewModel" Margin="20">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Закрытие склада" 
+                   FontSize="18" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"/>
+
+        <!-- Вопрос подтверждения -->
+        <TextBlock Grid.Row="1" 
+                   Text="Вы действительно хотите закрыть склад?" 
+                   FontSize="14" 
+                   Margin="0,0,0,10"/>
+
+        <!-- Название склада -->
+        <TextBlock Grid.Row="2" 
+                   Text="{Binding WarehouseName}" 
+                   FontSize="16" 
+                   FontWeight="SemiBold"
+                   Foreground="#dc3545"
+                   Margin="0,0,0,20"/>
+
+        <!-- Время закрытия -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,15">
+            <TextBlock Text="Время закрытия:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding ClosedAtText}" 
+                     Watermark="yyyy-MM-dd HH:mm:ss"
+                     FontFamily="Consolas"/>
+        </StackPanel>
+
+        <!-- Сообщение об ошибке -->
+        <TextBlock Grid.Row="4" 
+                   Text="{Binding ErrorMessage}" 
+                   Foreground="Red" 
+                   IsVisible="{Binding HasError}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,10"/>
+
+        <!-- Индикатор загрузки -->
+        <views:LoadingOverlay Grid.Row="5" 
+                              DataContext="{Binding LoadingOverlay}"/>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="6" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Spacing="10">
+            <Button Content="Нет" 
+                    Command="{Binding CancelCommand}"
+                    Width="80"/>
+            <Button Content="Да" 
+                    Command="{Binding CloseCommand}"
+                    Width="80"
+                    Background="#dc3545"
+                    Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

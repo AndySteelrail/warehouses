@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Warehouses.client.ViewModels"
+        xmlns:views="using:Warehouses.client.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="Warehouses.client.Views.CreateWarehouseWindow"
+        x:DataType="vm:CreateWarehouseViewModel"
+        Title="Создание склада"
+        Width="400" Height="320"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="20,20,20,60">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Создание нового склада" 
+                   FontSize="18" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"/>
+
+        <!-- Основной контент -->
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+            <TextBlock Text="Название склада:" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding WarehouseName}" 
+                     Watermark="Введите название склада"
+                     Margin="0,0,0,10"/>
+            
+            <TextBlock Text="Время создания:" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding CreatedAtText}" 
+                     Watermark="2025-07-02 18:24:00"
+                     Margin="0,0,0,20"/>
+        </StackPanel>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,30,0,30">
+            <Button Content="Отмена" 
+                    Command="{Binding CancelCommand}"
+                    Margin="0,0,10,0"
+                    Padding="20,8"/>
+            
+            <Button Content="Создать" 
+                    Command="{Binding CreateCommand}"
+                    IsEnabled="{Binding CanCreate}"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    Padding="20,8"/>
+        </StackPanel>
+
+        <!-- Сообщения об ошибках -->
+        <Border Grid.Row="1" 
+                Background="#FFEBEE" 
+                BorderBrush="#F44336" 
+                BorderThickness="1"
+                CornerRadius="4"
+                Margin="0,0,0,10"
+                IsVisible="{Binding HasError}"
+                VerticalAlignment="Bottom">
+            <TextBlock Text="{Binding ErrorMessage}" 
+                      Foreground="#D32F2F"
+                      Margin="10"
+                      TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Индикатор загрузки -->
+        <views:LoadingOverlay Grid.Row="1" Grid.RowSpan="2"
+                              DataContext="{Binding LoadingOverlay}"/>
+    </Grid>
+</Window> 

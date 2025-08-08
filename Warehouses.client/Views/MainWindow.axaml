@@ -1,0 +1,296 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Warehouses.client.ViewModels"
+        xmlns:views="using:Warehouses.client.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="900"
+        x:Class="Warehouses.client.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding Title}">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Панель фильтров -->
+        <Border Grid.Row="0" 
+                BorderBrush="#1E5A7A" 
+                BorderThickness="0,0,0,2" 
+                Padding="15,10">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#2E86AB" Offset="0"/>
+                    <GradientStop Color="#A23B72" Offset="0.5"/>
+                    <GradientStop Color="#F18F01" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                          Text="📅 Дата:" 
+                          VerticalAlignment="Center" 
+                          Foreground="White"
+                          FontWeight="SemiBold"
+                          Margin="0,0,10,0"/>
+
+                <TextBox Grid.Column="1" 
+                        Text="{Binding SelectedDateText}"
+                        Watermark="2025-07-02 18:24:00"
+                        Background="White"
+                        BorderBrush="#2E86AB"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="2" 
+                          Text="📦 Тип груза:" 
+                          VerticalAlignment="Center" 
+                          Foreground="White"
+                          FontWeight="SemiBold"
+                          Margin="0,0,10,0"/>
+
+                <ComboBox Grid.Column="3" 
+                         ItemsSource="{Binding CargoTypes}"
+                         SelectedItem="{Binding SelectedCargoType}"
+                         Background="White"
+                         BorderBrush="#2E86AB"
+                         BorderThickness="1"
+                         CornerRadius="4"
+                         Margin="0,0,20,0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <StackPanel Grid.Column="4" 
+                           Orientation="Horizontal" 
+                           HorizontalAlignment="Right">
+                    <Button Content="🔄 Обновить" 
+                            Command="{Binding RefreshCommand}"
+                            IsEnabled="{Binding !IsBusy}"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            BorderBrush="#45A049"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12,6"
+                            FontWeight="SemiBold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Основной контент -->
+        <Grid Grid.Row="1">
+            <!-- Древовидный список складов с табличными данными -->
+            <Border Background="White" 
+                    BorderBrush="#DEE2E6" 
+                    BorderThickness="1" 
+                    CornerRadius="4"
+                    Margin="15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Заголовки таблицы -->
+                    <Border Grid.Row="0" 
+                            Background="#F8F9FA" 
+                            BorderBrush="#DEE2E6" 
+                            BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="250"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+                                    BorderBrush="#E9ECEF" 
+                                    BorderThickness="0,0,1,0">
+                                <TextBlock Text="Наименование" 
+                                          FontWeight="SemiBold"
+                                          Padding="8,6"/>
+                            </Border>
+                           
+                            <Border Grid.Column="1" 
+                                    BorderBrush="#E9ECEF" 
+                                    BorderThickness="0,0,1,0">
+                                <TextBlock Text="Груз" 
+                                          FontWeight="SemiBold"
+                                          HorizontalAlignment="Left"
+                                          Padding="8,6"/>
+                            </Border>
+                           
+                            <Border Grid.Column="2" 
+                                    BorderBrush="#E9ECEF" 
+                                    BorderThickness="0,0,1,0">
+                                <TextBlock Text="Вес (т.)" 
+                                          FontWeight="SemiBold"
+                                          HorizontalAlignment="Right"
+                                          Padding="8,6"/>
+                            </Border>
+                           
+                            <Border Grid.Column="3">
+                                <TextBlock Text="Действия" 
+                                          FontWeight="SemiBold"
+                                          HorizontalAlignment="Right"
+                                          Padding="8,6"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Дерево -->
+                    <TreeView Grid.Row="1"
+                             ItemsSource="{Binding WarehousesTree}"
+                             Background="Transparent"
+                             BorderThickness="0">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <Border Background="Transparent" 
+                                    Padding="0" 
+                                    CornerRadius="3"
+                                    Margin="0,1"
+                                    BorderBrush="#E9ECEF"
+                                    BorderThickness="0,0,0,1"
+                                    MinHeight="40"
+                                    Tapped="OnNodeTapped"
+                                    Cursor="{Binding NodeType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=CreateWarehouse, FallbackValue=Arrow}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="250"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Название узла -->
+                                    <Border Grid.Column="0" 
+                                            BorderBrush="#E9ECEF" 
+                                            BorderThickness="0,0,1,0"
+                                            Padding="8,6">
+                                        <TextBlock Text="{Binding DisplayName}" 
+                                                  VerticalAlignment="Center"
+                                                  FontWeight="SemiBold"
+                                                  Foreground="{Binding NodeType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=CreateWarehouse, FallbackValue=Black}"/>
+                                    </Border>
+                                    
+                                    <!-- Табличные данные для площадок -->
+                                    <Border Grid.Column="1" 
+                                            BorderBrush="#E9ECEF" 
+                                            BorderThickness="0,0,1,0"
+                                            Padding="8,6"
+                                            IsVisible="{Binding IsPlatform}">
+                                        <TextBlock Text="{Binding CargoType}" 
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"
+                                                  Foreground="#6C757D"
+                                                  FontSize="12"/>
+                                    </Border>
+                                                
+                                    <Border Grid.Column="2" 
+                                            BorderBrush="#E9ECEF" 
+                                            BorderThickness="0,0,1,0"
+                                            Padding="8,6"
+                                            IsVisible="{Binding IsPlatform}">
+                                        <TextBlock Text="{Binding CargoAmount, StringFormat='{}{0:N3}'}" 
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Right"
+                                                  Foreground="#6C757D"
+                                                  FontSize="12"/>
+                                    </Border>
+
+                                    <!-- Кнопки действий (справа) -->
+                                    <Border Grid.Column="3" 
+                                            Padding="8,6">
+                                        <StackPanel Orientation="Horizontal" 
+                                                    HorizontalAlignment="Right">
+                                        
+                                        <!-- Кнопки для складов -->
+                                        <Button Content="✏️" 
+                                                Command="{Binding EditCommand}"
+                                                Width="32" Height="32"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Margin="0,0,4,0"
+                                                FontSize="16"
+                                                Padding="5"
+                                                IsVisible="{Binding CanEdit}"/>
+                                        
+                                        <Button Content="🗺️" 
+                                                Command="{Binding CreatePicketCommand}"
+                                                Width="32" Height="32"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Margin="0,0,4,0"
+                                                FontSize="16"
+                                                Padding="5"
+                                                IsVisible="{Binding CanCreatePicket}"/>
+                                        
+                                        <Button Content="🏗️" 
+                                                Command="{Binding CreatePlatformCommand}"
+                                                Width="32" Height="32"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Margin="0,0,4,0"
+                                                FontSize="16"
+                                                Padding="5"
+                                                IsVisible="{Binding CanCreatePlatform}"/>
+                                        
+                                        <Button Content="🗑️" 
+                                                Command="{Binding DeleteCommand}"
+                                                Width="32" Height="32"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Margin="0,0,4,0"
+                                                FontSize="16"
+                                                Padding="5"
+                                                IsVisible="{Binding CanDelete}"/>
+                                        
+                                        <!-- Кнопка добавления груза для площадок -->
+                                        <Button Content="📦" 
+                                                Command="{Binding AddCargoCommand}"
+                                                Width="32" Height="32"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                FontSize="16"
+                                                Padding="5"
+                                                IsVisible="{Binding CanAddCargo}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Сообщения об ошибках -->
+        <views:ErrorMessageOverlay Grid.Row="1"
+                                   DataContext="{Binding ErrorOverlay}"/>
+
+        <!-- Индикатор загрузки -->
+        <views:LoadingOverlay Grid.Row="1"
+                              DataContext="{Binding LoadingOverlay}"/>
+    </Grid>
+</Window>

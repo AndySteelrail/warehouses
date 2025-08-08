@@ -1,0 +1,244 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Warehouses.client.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
+             x:Class="Warehouses.client.Views.ItemDetailsView"
+             x:DataType="vm:ItemDetailsViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="15">
+            <!-- Заголовок -->
+            <TextBlock Text="Детали элемента" 
+                       FontSize="16" 
+                       FontWeight="Bold" 
+                       Margin="0,0,0,20"/>
+
+            <!-- Информация о складе -->
+            <Border IsVisible="{Binding IsWarehouse}"
+                    Background="#F8F9FA" 
+                    BorderBrush="#DEE2E6" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="15" 
+                    Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="🏢 Склад" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,10"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="ID:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding WarehouseId}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Название:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding WarehouseName}" 
+                                   Margin="0,0,0,5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Информация о площадке -->
+            <Border IsVisible="{Binding IsPlatform}"
+                    Background="#E3F2FD" 
+                    BorderBrush="#2196F3" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="15" 
+                    Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📦 Площадка" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,10"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="ID:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding PlatformId}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Название:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding PlatformName}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" 
+                                   Text="Статус:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" 
+                                   Text="{Binding PlatformStatus}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" 
+                                   Text="Создана:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" 
+                                   Text="{Binding PlatformCreatedAt}" 
+                                   Margin="0,0,0,5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Информация о пикете -->
+            <Border IsVisible="{Binding IsPicket}"
+                    Background="#F3E5F5" 
+                    BorderBrush="#9C27B0" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="15" 
+                    Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📍 Пикет" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,10"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="ID:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding PicketId}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Название:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding PicketName}" 
+                                   Margin="0,0,0,5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Информация о грузе -->
+            <Border IsVisible="{Binding HasCargo}"
+                    Background="#E8F5E8" 
+                    BorderBrush="#4CAF50" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="15" 
+                    Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📦 Текущий груз" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,10"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="Тип:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding CargoType}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Остаток:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding CargoRemainder}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" 
+                                   Text="Единица:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" 
+                                   Text="{Binding CargoUnit}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" 
+                                   Text="Приход:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" 
+                                   Text="{Binding CargoComing}" 
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" 
+                                   Text="Расход:" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,10,5"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" 
+                                   Text="{Binding CargoConsumption}" 
+                                   Margin="0,0,0,5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Сообщение об отсутствии выбора -->
+            <Border IsVisible="{Binding IsEmpty}"
+                    Background="#FFF3E0" 
+                    BorderBrush="#FF9800" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="15">
+                <TextBlock Text="Выберите элемент в дереве для просмотра деталей" 
+                           HorizontalAlignment="Center" 
+                           Foreground="#E65100"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl> 
