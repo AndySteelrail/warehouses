@@ -56,7 +56,7 @@ public class ApiService : IApiService
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
                 if (errorResponse?.Message != null)
                 {
-                    throw new HttpRequestException($"Ошибка API: {errorResponse.Message}");
+                    throw new HttpRequestException(errorResponse.Message);
                 }
             }
             catch (JsonException)
@@ -64,7 +64,7 @@ public class ApiService : IApiService
                 // Если не удалось десериализовать как JSON, используем как есть
             }
             
-            throw new HttpRequestException($"HTTP {response.StatusCode}: {errorContent}");
+            throw new HttpRequestException("Произошла ошибка при выполнении запроса");
         }
         catch (Exception ex)
         {
@@ -115,7 +115,7 @@ public class ApiService : IApiService
                     var errorResponse = System.Text.Json.JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
                     if (errorResponse?.Message != null)
                     {
-                        throw new HttpRequestException($"Ошибка API: {errorResponse.Message}");
+                        throw new HttpRequestException(errorResponse.Message);
                     }
                 }
                 catch (System.Text.Json.JsonException)
@@ -123,7 +123,7 @@ public class ApiService : IApiService
                     // Если не удалось десериализовать как JSON, используем как есть
                 }
                 
-                throw new HttpRequestException($"HTTP {response.StatusCode}: {errorContent}");
+                throw new HttpRequestException("Произошла ошибка при выполнении запроса");
             }
         }
         catch (Exception ex)
@@ -156,7 +156,7 @@ public class ApiService : IApiService
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
                 if (errorResponse?.Message != null)
                 {
-                    throw new HttpRequestException($"Ошибка API: {errorResponse.Message}");
+                    throw new HttpRequestException(errorResponse.Message);
                 }
             }
             catch (JsonException)
@@ -164,7 +164,7 @@ public class ApiService : IApiService
                 // Если не удалось десериализовать как JSON, используем как есть
             }
             
-            throw new HttpRequestException($"HTTP {response.StatusCode}: {errorContent}");
+            throw new HttpRequestException("Произошла ошибка при выполнении запроса");
         }
         catch (Exception ex)
         {
@@ -193,7 +193,7 @@ public class ApiService : IApiService
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
                 if (errorResponse?.Message != null)
                 {
-                    throw new HttpRequestException($"Ошибка API: {errorResponse.Message}");
+                    throw new HttpRequestException(errorResponse.Message);
                 }
             }
             catch (JsonException)
@@ -201,7 +201,7 @@ public class ApiService : IApiService
                 // Если не удалось десериализовать как JSON, используем как есть
             }
             
-            throw new HttpRequestException($"HTTP {response.StatusCode}: {errorContent}");
+            throw new HttpRequestException("Произошла ошибка при выполнении запроса");
         }
         catch (Exception ex)
         {
