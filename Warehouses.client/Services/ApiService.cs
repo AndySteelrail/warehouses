@@ -79,9 +79,9 @@ public class ApiService : IApiService
         {
             var fullUrl = $"{BaseUrl}{endpoint}";
             _logger.LogInformation("Выполняем POST запрос к {Endpoint}", fullUrl);
-            _logger.LogInformation("Отправляемые данные: {Data}", System.Text.Json.JsonSerializer.Serialize(data));
+            _logger.LogInformation("Отправляемые данные: {Data}", JsonSerializer.Serialize(data));
             
-            var json = System.Text.Json.JsonSerializer.Serialize(data);
+            var json = JsonSerializer.Serialize(data);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
             var response = await HttpClient.PostAsync(fullUrl, content);
@@ -99,7 +99,7 @@ public class ApiService : IApiService
                     return default(T);
                 }
                 
-                var result = System.Text.Json.JsonSerializer.Deserialize<T>(responseContent, _jsonOptions);
+                var result = JsonSerializer.Deserialize<T>(responseContent, _jsonOptions);
                 _logger.LogInformation("Данные успешно десериализованы в тип {Type}", typeof(T).Name);
                 return result;
             }
@@ -109,18 +109,10 @@ public class ApiService : IApiService
                 _logger.LogError("POST запрос к {Endpoint} завершился с ошибкой {StatusCode}: {ErrorContent}", 
                     endpoint, response.StatusCode, errorContent);
                 
-                // Пытаемся десериализовать ошибку как JSON
-                try
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
+                if (errorResponse?.Message != null)
                 {
-                    var errorResponse = System.Text.Json.JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
-                    if (errorResponse?.Message != null)
-                    {
-                        throw new HttpRequestException(errorResponse.Message);
-                    }
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    // Если не удалось десериализовать как JSON, используем как есть
+                    throw new HttpRequestException(errorResponse.Message);
                 }
                 
                 throw new HttpRequestException("Произошла ошибка при выполнении запроса");
@@ -187,18 +179,10 @@ public class ApiService : IApiService
             var errorContent = await response.Content.ReadAsStringAsync();
             _logger.LogWarning("DELETE запрос к {Endpoint} завершился с кодом {StatusCode}: {ErrorContent}", endpoint, response.StatusCode, errorContent);
             
-            // Пытаемся десериализовать ошибку как JSON
-            try
+            var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
+            if (errorResponse?.Message != null)
             {
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
-                if (errorResponse?.Message != null)
-                {
-                    throw new HttpRequestException(errorResponse.Message);
-                }
-            }
-            catch (JsonException)
-            {
-                // Если не удалось десериализовать как JSON, используем как есть
+                throw new HttpRequestException(errorResponse.Message);
             }
             
             throw new HttpRequestException("Произошла ошибка при выполнении запроса");

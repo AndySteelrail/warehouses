@@ -28,8 +28,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -49,8 +48,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -67,8 +65,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -85,8 +82,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -151,8 +147,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -169,8 +164,7 @@ public class DialogService : IDialogService
         {
             DataContext = viewModel
         };
-
-        // Подписываемся на событие закрытия окна
+        
         viewModel.WindowClosed += (result) => window.SetResult(result);
 
         window.Show();
@@ -202,16 +196,16 @@ public class DialogService : IDialogService
     {
         var tcs = new TaskCompletionSource<MessageBoxResult>();
         
-        var window = new Avalonia.Controls.Window
+        var window = new Window
         {
             Title = title,
             Width = 400,
             Height = 200,
             CanResize = false,
-            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var textBlock = new Avalonia.Controls.TextBlock
+        var textBlock = new TextBlock
         {
             Text = message,
             TextWrapping = Avalonia.Media.TextWrapping.Wrap,
@@ -220,7 +214,7 @@ public class DialogService : IDialogService
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
 
-        var buttonPanel = new Avalonia.Controls.StackPanel
+        var buttonPanel = new StackPanel
         {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -232,7 +226,7 @@ public class DialogService : IDialogService
         switch (buttons)
         {
             case MessageBoxButtons.Ok:
-                var okButton = new Avalonia.Controls.Button
+                var okButton = new Button
                 {
                     Content = "OK",
                     Width = 80,
@@ -247,7 +241,7 @@ public class DialogService : IDialogService
                 break;
 
             case MessageBoxButtons.YesNo:
-                var yesButton = new Avalonia.Controls.Button
+                var yesButton = new Button
                 {
                     Content = "Да",
                     Width = 80,
@@ -259,7 +253,7 @@ public class DialogService : IDialogService
                     window.Close();
                 };
 
-                var noButton = new Avalonia.Controls.Button
+                var noButton = new Button
                 {
                     Content = "Нет",
                     Width = 80,
@@ -276,7 +270,7 @@ public class DialogService : IDialogService
                 break;
 
             case MessageBoxButtons.YesNoCancel:
-                var yesButton2 = new Avalonia.Controls.Button
+                var yesButton2 = new Button
                 {
                     Content = "Да",
                     Width = 80,
@@ -288,7 +282,7 @@ public class DialogService : IDialogService
                     window.Close();
                 };
 
-                var noButton2 = new Avalonia.Controls.Button
+                var noButton2 = new Button
                 {
                     Content = "Нет",
                     Width = 80,
@@ -300,7 +294,7 @@ public class DialogService : IDialogService
                     window.Close();
                 };
 
-                var cancelButton = new Avalonia.Controls.Button
+                var cancelButton = new Button
                 {
                     Content = "Отмена",
                     Width = 80,
@@ -318,7 +312,7 @@ public class DialogService : IDialogService
                 break;
         }
 
-        var stackPanel = new Avalonia.Controls.StackPanel
+        var stackPanel = new StackPanel
         {
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };

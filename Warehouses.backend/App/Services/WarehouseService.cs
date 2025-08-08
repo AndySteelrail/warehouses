@@ -176,7 +176,7 @@ public class WarehouseService : IWarehouseService
             }
         }
 
-        _logger.LogInformation("Дерево складов сформировано: {WarehouseCount} складов", result.Warehouses.Count);
+        _logger.LogInformation($"Дерево складов сформировано: {result.Warehouses.Count} складов");
         return result;
     }
 
@@ -185,7 +185,7 @@ public class WarehouseService : IWarehouseService
     {
         try
         {
-            _logger.LogInformation("Начинаем закрытие склада {WarehouseId} на время {CloseTime}", id, closedAt);
+            _logger.LogInformation($"Начинаем закрытие склада {id} на время {closedAt}");
             
             var warehouse = await _warehouseRepository.GetByIdAsync(id);
             if (warehouse == null)
@@ -224,7 +224,7 @@ public class WarehouseService : IWarehouseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка закрытия склада {WarehouseId}", id);
+            _logger.LogError(ex, $"Ошибка закрытия склада {id}");
             throw;
         }
     }

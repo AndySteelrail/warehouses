@@ -21,9 +21,11 @@ public class CargoTypesService : IReferenceService
     public async Task<List<CargoType>> GetCargoTypesAsync()
     {
         var cargoTypes = await _apiService.GetAsync<List<CargoTypeDTO>>("cargotypes");
-        
+
         if (cargoTypes == null)
+        {
             return new List<CargoType>();
+        }
 
         return cargoTypes.Select(MapToModel).ToList();
     }

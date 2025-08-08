@@ -37,7 +37,7 @@ public class CargoService : ICargoService
             _logger.LogInformation("Отправляем запрос на добавление груза: PlatformId={PlatformId}, GoodTypeId={GoodTypeId}, Coming={Coming}, Consumption={Consumption}", 
                 platformId, cargoTypeId, coming, consumption);
 
-            var success = await _apiService.PostAsync<object>("cargo/record", dto);
+            await _apiService.PostAsync<object>("cargo/record", dto);
             
             _logger.LogInformation("Груз успешно добавлен для площадки {PlatformId}", platformId);
         }
@@ -52,6 +52,4 @@ public class CargoService : ICargoService
             throw new Exception($"Неожиданная ошибка: {ex.Message}", ex);
         }
     }
-
-
 } 

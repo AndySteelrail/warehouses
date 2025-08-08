@@ -22,7 +22,6 @@ public class PlatformService : IPlatformService
         IPlatformRepository platformRepository,
         IPicketRepository picketRepository,
         IPlatformPicketRepository platformPicketRepository,
-        ICargoRepository cargoRepository,
         ILogger<PlatformService> logger)
     {
         _warehouseRepository = warehouseRepository;
@@ -31,57 +30,7 @@ public class PlatformService : IPlatformService
         _platformPicketRepository = platformPicketRepository;
         _logger = logger;
     }
-
-    public async Task<Platform> CreatePlatformAsync(int warehouseId, string name, DateTime? createdAt = null)
-    {
-        try
-        {
-            _logger.LogInformation("Начинаем создание площадки без пикетов: WarehouseId={WarehouseId}, Name={Name}", warehouseId, name);
-            
-            // Проверяем существование склада
-            _logger.LogInformation("Проверяем существование склада: WarehouseId={WarehouseId}", warehouseId);
-            var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId);
-            if (warehouse == null)
-            {
-                _logger.LogError("Склад не найден: WarehouseId={WarehouseId}", warehouseId);
-                throw new NotFoundException($"Склад с id {warehouseId} не найден");
-            }
-            
-            _logger.LogInformation("Склад найден: WarehouseId={WarehouseId}, Name={Name}", warehouse.Id, warehouse.Name);
-            
-            // Проверяем уникальность имени площадки в рамках склада
-            _logger.LogInformation("Проверяем уникальность имени площадки: Name={Name}, WarehouseId={WarehouseId}", name, warehouseId);
-            var existing = await _platformRepository.GetByNameAsync(warehouseId, name);
-            if (existing != null)
-            {
-                _logger.LogError("Площадка с таким именем уже существует: Name={Name}, WarehouseId={WarehouseId}, ExistingPlatformId={ExistingPlatformId}", 
-                    name, warehouseId, existing.Id);
-                throw new InvalidOperationException($"Площадка с именем '{name}' уже существует на складе");
-            }
-            
-            // Создаем площадку
-            _logger.LogInformation("Создаем площадку в базе данных: Name={Name}, WarehouseId={WarehouseId}", name, warehouseId);
-            var platform = new Platform
-            {
-                Name = name,
-                WarehouseId = warehouseId,
-                CreatedAt = createdAt?.ToUniversalTime() ?? DateTime.UtcNow
-            };
-            await _platformRepository.AddAsync(platform);
-            await _platformRepository.SaveChangesAsync();
-            
-            _logger.LogInformation("Площадка успешно создана: PlatformId={PlatformId}, Name={Name}, WarehouseId={WarehouseId}", 
-                platform.Id, platform.Name, platform.WarehouseId);
-            
-            return platform;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при создании площадки: WarehouseId={WarehouseId}, Name={Name}", warehouseId, name);
-            throw new ApplicationException("Не удалось создать площадку", ex);
-        }
-    }
-
+    
     public async Task<Platform> CreatePlatformAsync(int warehouseId, string name, IEnumerable<int> picketIds, DateTime? createdAt = null)
     {
         try
