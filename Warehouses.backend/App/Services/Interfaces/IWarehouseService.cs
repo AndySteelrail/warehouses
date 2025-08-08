@@ -4,7 +4,7 @@ using Warehouses.backend.Models;
 namespace Warehouses.backend.Services;
 
 /// <summary>
-/// Интерфейс сервиса для управления складами
+/// Интерфейс сервиса для управления складами и получения всего дерева складской иерархии
 /// </summary>
 public interface IWarehouseService
 {

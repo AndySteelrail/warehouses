@@ -43,7 +43,7 @@ public class PicketsController : ControllerBase
             // Валидация: если PlatformId не указан, то должен быть указан WarehouseId
             if (!dto.PlatformId.HasValue && !dto.WarehouseId.HasValue)
             {
-                _logger.LogWarning("Не указан ни PlatformId, ни WarehouseId");
+                _logger.LogWarning("Не указан PlatformId, ни WarehouseId");
                 return BadRequest(new ErrorResponse("Необходимо указать либо PlatformId, либо WarehouseId", errorCode: "VALIDATION_ERROR"));
             }
 

@@ -44,7 +44,7 @@ public class PlatformService : IPlatformService
             if (warehouse == null)
             {
                 _logger.LogError("Склад не найден: WarehouseId={WarehouseId}", warehouseId);
-                throw new NotFoundException($"Warehouse with id {warehouseId} not found");
+                throw new NotFoundException($"Склад с id {warehouseId} не найден");
             }
             
             _logger.LogInformation("Склад найден: WarehouseId={WarehouseId}, Name={Name}", warehouse.Id, warehouse.Name);
@@ -56,7 +56,7 @@ public class PlatformService : IPlatformService
             {
                 _logger.LogError("Площадка с таким именем уже существует: Name={Name}, WarehouseId={WarehouseId}, ExistingPlatformId={ExistingPlatformId}", 
                     name, warehouseId, existing.Id);
-                throw new InvalidOperationException($"Platform with name '{name}' already exists in warehouse");
+                throw new InvalidOperationException($"Площадка с именем '{name}' уже существует на складе");
             }
             
             // Создаем площадку
@@ -78,7 +78,7 @@ public class PlatformService : IPlatformService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при создании площадки: WarehouseId={WarehouseId}, Name={Name}", warehouseId, name);
-            throw new ApplicationException("Failed to create platform", ex);
+            throw new ApplicationException("Не удалось создать площадку", ex);
         }
     }
 
@@ -89,23 +89,23 @@ public class PlatformService : IPlatformService
             // Проверяем существование склада
             var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId);
             if (warehouse == null)
-                throw new NotFoundException($"Warehouse with id {warehouseId} not found");
+                throw new NotFoundException($"Склад с id {warehouseId} не найден");
             
             // Проверяем, есть ли пикеты в складе
             var warehousePickets = await _picketRepository.GetByWarehouseIdAsync(warehouseId);
             if (!warehousePickets.Any())
-                throw new InvalidOperationException("Cannot create platform for warehouse without pickets");
+                throw new InvalidOperationException("Невозможно создать площадку для склада без пикетов");
             
             // Проверяем, что все запрошенные пикеты принадлежат складу
             var invalidPickets = picketIds.Except(warehousePickets.Select(p => p.Id));
             if (invalidPickets.Any())
                 throw new InvalidOperationException(
-                    $"Pickets [{string.Join(", ", invalidPickets)}] do not belong to warehouse");
+                    $"Пикеты [{string.Join(", ", invalidPickets)}] не принадлежат складу");
             
             // Проверяем уникальность имени площадки в рамках склада
             var existing = await _platformRepository.GetByNameAsync(warehouseId, name);
             if (existing != null)
-                throw new InvalidOperationException($"Platform with name '{name}' already exists in warehouse");
+                throw new InvalidOperationException($"Площадка с именем '{name}' уже существует на складе");
             
             // Проверяем, что пикеты свободны
             await ValidatePicketsAvailabilityAsync(picketIds);
@@ -140,7 +140,7 @@ public class PlatformService : IPlatformService
             {
                 var picket = await _picketRepository.GetByIdAsync(picketId);
                 throw new InvalidOperationException(
-                    $"Picket '{picket?.Name}' is already assigned to another active platform");
+                    $"Пикет '{picket?.Name}' уже назначен на другую активную площадку");
             }
         }
     }
@@ -149,7 +149,7 @@ public class PlatformService : IPlatformService
     {
         var platform = await _platformRepository.GetByIdAsync(id);
         if (platform == null)
-            throw new NotFoundException($"Platform with id {id} not found");
+            throw new NotFoundException($"Площадка с id {id} не найдена");
         
         return platform;
     }
@@ -163,17 +163,17 @@ public class PlatformService : IPlatformService
     {
         var platform = await _platformRepository.GetByIdAsync(id);
         if (platform == null)
-            throw new NotFoundException($"Platform with id {id} not found");
+            throw new NotFoundException($"Площадка с id {id} не найдена");
         
         if (platform.ClosedAt.HasValue)
-            throw new InvalidOperationException("Cannot update closed platform");
+            throw new InvalidOperationException("Невозможно обновить закрытую площадку");
         
         // Проверяем уникальность имени
         if (!string.Equals(platform.Name, name))
         {
             var existing = await _platformRepository.GetByNameAsync(platform.WarehouseId, name);
             if (existing != null && existing.Id != id)
-                throw new InvalidOperationException($"Platform with name '{name}' already exists in warehouse");
+                throw new InvalidOperationException($"Площадка с именем '{name}' уже существует на складе");
         }
         
         // Обновляем

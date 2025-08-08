@@ -39,7 +39,7 @@ public class PicketService : IPicketService
         DateTime? createdAt = null)
     {
         // Начинаем транзакцию, т.к. нам нужно создать и пикет, и площадку, либо ничего из этого
-        using var transaction = await _picketRepository.BeginTransactionAsync();
+        await using var transaction = await _picketRepository.BeginTransactionAsync();
         
         try
         {
@@ -64,20 +64,14 @@ public class PicketService : IPicketService
             else
             {
                 // Создаем новую площадку
-                if (!warehouseId.HasValue)
-                {
-                    _logger.LogError("WarehouseId обязателен при создании новой площадки");
-                    throw new InvalidOperationException("WarehouseId is required when creating new platform");
-                }
-                
                 var logPlatformName = newPlatformName ?? "не указано";
-                _logger.LogInformation("Создаем новую площадку: WarehouseId={WarehouseId}, Name={Name}", warehouseId.Value, logPlatformName);
+                _logger.LogInformation($"Создаем новую площадку: WarehouseId={warehouseId}, Name={logPlatformName}");
                 
                 var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId.Value);
                 if (warehouse == null)
                 {
-                    _logger.LogError("Склад не найден: WarehouseId={WarehouseId}", warehouseId.Value);
-                    throw new NotFoundException($"Склад с id {warehouseId.Value} не найден");
+                    _logger.LogError($"Склад не найден: WarehouseId={warehouseId}");
+                    throw new NotFoundException($"Склад с id {warehouseId} не найден");
                 }
                 
                 // Проверяем уникальность имени площадки
@@ -85,7 +79,7 @@ public class PicketService : IPicketService
                 var existingPlatform = await _platformRepository.GetByNameAsync(warehouseId.Value, platformName);
                 if (existingPlatform != null)
                 {
-                    _logger.LogError("Площадка с таким именем уже существует: Name={Name}, WarehouseId={WarehouseId}", platformName, warehouseId.Value);
+                    _logger.LogError($"Площадка с таким именем уже существует: Name={platformName}, WarehouseId={warehouseId}");
                     throw new InvalidOperationException($"Платформа с именем '{platformName}' уже есть на складе");
                 }
                 
@@ -116,10 +110,10 @@ public class PicketService : IPicketService
             }
             else
             {
-                _logger.LogInformation("Пикет с именем {Name} не найден на время {Time}, можно создавать", finalPicketName, recordTime);
+                _logger.LogInformation($"Пикет с именем {finalPicketName} не найден на время {recordTime}, можно создавать");
             }
             
-            _logger.LogInformation("Создаем пикет: Name={Name}, WarehouseId={WarehouseId}", finalPicketName, targetPlatform.WarehouseId);
+            _logger.LogInformation($"Создаем пикет: Name={finalPicketName}, WarehouseId={targetPlatform.WarehouseId}");
             var picket = new Picket
             {
                 Name = finalPicketName,
@@ -132,12 +126,12 @@ public class PicketService : IPicketService
             _logger.LogInformation("Пикет создан: PicketId={PicketId}, Name={Name}, WarehouseId={WarehouseId}", 
                 picket.Id, picket.Name, picket.WarehouseId);
             
-            _logger.LogInformation("Добавляем пикет к площадке: PlatformId={PlatformId}, PicketId={PicketId}", targetPlatform.Id, picket.Id);
+            _logger.LogInformation($"Добавляем пикет к площадке: PlatformId={targetPlatform.Id}, PicketId={picket.Id}");
             await _platformPicketRepository.AddPicketsToPlatformAsync(targetPlatform.Id, new[] { picket.Id }, createdAt);
             
             await transaction.CommitAsync();
             
-            _logger.LogInformation("Транзакция успешно завершена. Пикет создан: PicketId={PicketId}, PlatformId={PlatformId}", picket.Id, targetPlatform.Id);
+            _logger.LogInformation($"Транзакция успешно завершена. Пикет создан: PicketId={picket.Id}, PlatformId={targetPlatform.Id}");
             
             return picket;
         }
@@ -148,70 +142,7 @@ public class PicketService : IPicketService
             throw;
         }
     }
-
-    public async Task<Picket> CreatePicketAsync(int platformId, string name, DateTime? createdAt = null)
-    {
-        try
-        {
-            _logger.LogInformation("Начинаем создание пикета: PlatformId={PlatformId}, Name={Name}", platformId, name);
-            _logger.LogInformation("Проверяем существование площадки: PlatformId={PlatformId}", platformId);
-            var platform = await _platformRepository.GetByIdAsync(platformId);
-            if (platform == null)
-            {
-                _logger.LogError("Площадка не найдена: PlatformId={PlatformId}", platformId);
-                throw new NotFoundException($"Площадка с id {platformId} не найдена");
-            }
-            
-            _logger.LogInformation("Площадка найдена: PlatformId={PlatformId}, WarehouseId={WarehouseId}, Name={Name}, ClosedAt={ClosedAt}", 
-                platform.Id, platform.WarehouseId, platform.Name, platform.ClosedAt);
-            
-            if (platform.ClosedAt.HasValue)
-            {
-                _logger.LogError("Попытка создать пикет для закрытой площадки: PlatformId={PlatformId}, ClosedAt={ClosedAt}", platformId, platform.ClosedAt);
-                throw new InvalidOperationException("Нельзя создать пикет на закрытой площадке");
-            }
-            
-            var recordTime = createdAt?.ToUniversalTime() ?? DateTime.UtcNow;
-            _logger.LogInformation("Проверяем уникальность имени пикета: Name={Name}, WarehouseId={WarehouseId}, Time={Time}", name, platform.WarehouseId, recordTime);
-            var existing = await _picketRepository.GetByNameForUniquenessCheckAsync(platform.WarehouseId, name, recordTime);
-            if (existing != null)
-            {
-                _logger.LogError("Пикет с таким именем уже существует на время {Time}: Name={Name}, WarehouseId={WarehouseId}, ExistingPicketId={ExistingPicketId}, ExistingCreatedAt={ExistingCreatedAt}, ExistingClosedAt={ExistingClosedAt}", 
-                    recordTime, name, platform.WarehouseId, existing.Id, existing.CreatedAt, existing.ClosedAt);
-                throw new InvalidOperationException($"Пикет с именем '{name}' уже был на складе в дату {recordTime:yyyy-MM-dd HH:mm:ss}");
-            }
-            else
-            {
-                _logger.LogInformation("Пикет с именем {Name} не найден на время {Time}, можно создавать", name, recordTime);
-            }
-            
-            _logger.LogInformation("Создаем пикет в базе данных: Name={Name}, WarehouseId={WarehouseId}", name, platform.WarehouseId);
-            var picket = new Picket
-            {
-                Name = name,
-                WarehouseId = platform.WarehouseId,
-                CreatedAt = createdAt?.ToUniversalTime() ?? DateTime.UtcNow
-            };
-            await _picketRepository.AddAsync(picket);
-            await _picketRepository.SaveChangesAsync();
-            
-            _logger.LogInformation("Пикет создан в базе данных: PicketId={PicketId}, Name={Name}, WarehouseId={WarehouseId}", 
-                picket.Id, picket.Name, picket.WarehouseId);
-            
-            _logger.LogInformation("Добавляем пикет к площадке: PlatformId={PlatformId}, PicketId={PicketId}", platformId, picket.Id);
-            await _platformPicketRepository.AddPicketsToPlatformAsync(platformId, new[] { picket.Id }, createdAt);
-            
-            _logger.LogInformation("Пикет успешно добавлен к площадке: PlatformId={PlatformId}, PicketId={PicketId}", platformId, picket.Id);
-            
-            return picket;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при создании пикета: PlatformId={PlatformId}, Name={Name}", platformId, name);
-            throw new ApplicationException("Создание пикета неудачно", ex);
-        }
-    }
-
+    
 
     public async Task UpdatePicketAsync(int id, string name)
     {

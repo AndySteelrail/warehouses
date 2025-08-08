@@ -39,10 +39,10 @@ public class CargoService : ICargoService
             // Проверяем существование площадки
             var platform = await _platformRepository.GetByIdAsync(platformId);
             if (platform == null)
-                throw new NotFoundException($"Platform with id {platformId} not found");
+                throw new NotFoundException($"Площадка с id {platformId} не найдена");
             
             if (platform.ClosedAt.HasValue)
-                throw new InvalidOperationException("Cannot record cargo for closed platform");
+                throw new InvalidOperationException("Невозможно записать груз для закрытой площадки");
             
             // Валидация времени записи относительно времени создания/закрытия площадки
             var recordTime = recordedAt?.ToUniversalTime() ?? DateTime.UtcNow;
@@ -60,7 +60,7 @@ public class CargoService : ICargoService
             // Проверяем типы грузов и единиц измерения
             var goodType = await _cargoTypeRepository.GetByIdAsync(goodTypeId);
             if (goodType == null)
-                throw new NotFoundException($"Good type with id {goodTypeId} not found");
+                throw new NotFoundException($"Тип груза с id {goodTypeId} не найден");
             
             // Проверяем, есть ли уже операция в то же время
             var existingRecordAtTime = await _cargoRepository.GetCargoRecordAtExactTimeAsync(platformId, recordTime);
@@ -115,7 +115,7 @@ public class CargoService : ICargoService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording cargo operation");
+            _logger.LogError(ex, "Ошибка записи операции с грузом");
             throw; // Просто перебрасываем исходное исключение
         }
     }
@@ -124,12 +124,12 @@ public class CargoService : ICargoService
     {
         var platform = await _platformRepository.GetByIdAsync(platformId);
         if (platform == null)
-            throw new NotFoundException($"Platform with id {platformId} not found");
+            throw new NotFoundException($"Площадка с id {platformId} не найдена");
         
         var cargoRecord = await _cargoRepository.GetLatestCargoRecordAsync(platformId, asOfDate);
         
         if (cargoRecord == null)
-            throw new NotFoundException($"No cargo records found for platform {platformId}");
+            throw new NotFoundException($"Записи груза для площадки {platformId} не найдены");
         
         return cargoRecord;
     }
