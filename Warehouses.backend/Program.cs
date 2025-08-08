@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Warehouses.backend;
 using Warehouses.backend.Data;
 
@@ -10,35 +11,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddRepositories();
 builder.Services.AddServices();
-
 builder.Services.AddLogging();
-
 builder.Services.ConfigureValidation();
-
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "Warehouses API" }));
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
-});
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Warehouses API", Version = "v1" });
+    options.AddDefaultPolicy(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 var app = builder.Build();
 
 
-
 app.ConfigureExceptionHandler();
-
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
