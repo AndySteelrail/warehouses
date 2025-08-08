@@ -58,7 +58,7 @@ public class PlatformsController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning("Некорректная операция при создании площадки: {Message}", ex.Message);
-            return BadRequest(ex.Message);
+            return BadRequest(new ErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
@@ -119,7 +119,7 @@ public class PlatformsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new ErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
