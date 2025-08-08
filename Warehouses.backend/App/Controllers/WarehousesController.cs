@@ -56,8 +56,7 @@ public class WarehousesController : ControllerBase
             return StatusCode(500, "Внутренняя ошибка сервера");
         }
     }
-
-
+    
 
     [HttpGet("tree")]
     public async Task<ActionResult<WarehousesTreeDTO>> GetTree(

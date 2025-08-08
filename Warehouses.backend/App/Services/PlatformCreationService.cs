@@ -1,8 +1,8 @@
-using Microsoft.Extensions.Logging;
 using Warehouses.backend.Models;
 using Warehouses.backend.Repositories.Interfaces;
+using Warehouses.backend.Services;
 
-namespace Warehouses.backend.Services;
+namespace Warehouses.backend.App.Services;
 
 /// <summary>
 /// Интерфейс сервиса для создания площадок с пикетами
@@ -49,12 +49,12 @@ public class PlatformCreationService : IPlatformCreationService
             throw new InvalidOperationException(validationResult.ErrorMessage);
         }
 
-        // 2. Начинаем транзакцию
-        using var transaction = await _platformRepository.BeginTransactionAsync();
+        // 2. Транзакция
+        await using var transaction = await _platformRepository.BeginTransactionAsync();
         
         try
         {
-            // 3. Создаем новую площадку
+            // 3. Создаем площадку
             var newPlatform = new Platform
             {
                 Name = platformName,
@@ -138,7 +138,7 @@ public class PlatformCreationService : IPlatformCreationService
             foreach (var cargoTypeId in cargoTypes)
             {
                 var cargoType = await _cargoTypeRepository.GetByIdAsync(cargoTypeId);
-                cargoTypeNames.Add(cargoType?.Name ?? "Неизвестный");
+                cargoTypeNames.Add(cargoType!.Name);
             }
             
             throw new InvalidOperationException(

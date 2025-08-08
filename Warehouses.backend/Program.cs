@@ -50,7 +50,6 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseRouting();
 
-// Добавляем логирование запросов
 app.Use(async (context, next) =>
 {
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();

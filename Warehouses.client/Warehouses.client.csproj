@@ -6,6 +6,8 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <WarningLevel>3</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>

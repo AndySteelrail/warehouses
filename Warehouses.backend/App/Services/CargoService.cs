@@ -1,8 +1,9 @@
 ﻿using Warehouses.backend.Exceptions;
 using Warehouses.backend.Models;
 using Warehouses.backend.Repositories.Interfaces;
+using Warehouses.backend.Services;
 
-namespace Warehouses.backend.Services;
+namespace Warehouses.backend.App.Services;
 
 /// <summary>
 /// Сервис для управления грузами

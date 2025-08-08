@@ -161,9 +161,7 @@ public class PicketsController : ControllerBase
         }
     }
 
-
-
-
+    
 
     [HttpPost("{id}/close")]
     public async Task<IActionResult> Close(int id, [FromBody] ClosePicketDTO dto)

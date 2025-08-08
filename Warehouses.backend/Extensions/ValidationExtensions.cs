@@ -12,10 +12,10 @@ public static class ValidationExtensions
                 options.InvalidModelStateResponseFactory = context =>
                 {
                     var errors = context.ModelState
-                        .Where(e => e.Value.Errors.Any())
+                        .Where(e => e.Value?.Errors.Any() == true)
                         .ToDictionary(
                             e => e.Key,
-                            e => e.Value.Errors.Select(error => error.ErrorMessage).ToArray()
+                            e => e.Value!.Errors.Select(error => error.ErrorMessage).ToArray()
                         );
                     
                     return new BadRequestObjectResult(new

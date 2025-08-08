@@ -31,7 +31,7 @@ public class PlatformsController : ControllerBase
         try
         {
             _logger.LogInformation("Получен запрос на создание площадки: WarehouseId={WarehouseId}, Name={Name}, PicketIds={PicketIds}", 
-                dto.WarehouseId, dto.Name, string.Join(",", dto.PicketIds ?? new List<int>()));
+                dto.WarehouseId, dto.Name, string.Join(",", dto.PicketIds));
             
             if (!ModelState.IsValid) 
             {
@@ -43,7 +43,7 @@ public class PlatformsController : ControllerBase
             _logger.LogInformation("Создаем площадку через PlatformService: WarehouseId={WarehouseId}, Name={Name}", dto.WarehouseId, dto.Name);
             
             var platform = await _platformService.CreatePlatformAsync(
-                dto.WarehouseId, dto.Name, dto.PicketIds ?? new List<int>(), dto.CreatedAt);
+                dto.WarehouseId, dto.Name, dto.PicketIds, dto.CreatedAt);
 
             _logger.LogInformation("Площадка успешно создана: PlatformId={PlatformId}, Name={Name}, WarehouseId={WarehouseId}", 
                 platform.Id, platform.Name, platform.WarehouseId);
@@ -66,8 +66,7 @@ public class PlatformsController : ControllerBase
             return StatusCode(500, "Внутренняя ошибка сервера");
         }
     }
-
-
+    
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PlatformDTO>>> GetAll()
@@ -128,8 +127,7 @@ public class PlatformsController : ControllerBase
             return StatusCode(500, "Внутренняя ошибка сервера");
         }
     }
-
-
+    
 
     private PlatformDTO MapToDTO(Platform platform)
     {

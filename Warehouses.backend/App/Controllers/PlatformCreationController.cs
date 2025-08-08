@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Warehouses.backend.App.Services;
 using Warehouses.backend.DTO;
 using Warehouses.backend.DTO.Platform;
 using Warehouses.backend.Exceptions;
@@ -31,7 +32,7 @@ public class PlatformCreationController : ControllerBase
         try
         {
             _logger.LogInformation("Получен запрос на создание площадки с пикетами: WarehouseId={WarehouseId}, Name={Name}, PicketIds={PicketIds}", 
-                dto.WarehouseId, dto.Name, string.Join(",", dto.PicketIds ?? new List<int>()));
+                dto.WarehouseId, dto.Name, string.Join(",", dto.PicketIds));
             
             if (!ModelState.IsValid) 
             {
@@ -74,8 +75,7 @@ public class PlatformCreationController : ControllerBase
         }
     }
 
-
-
+    
     private static PlatformDTO MapToDTO(Platform platform)
     {
         return new PlatformDTO

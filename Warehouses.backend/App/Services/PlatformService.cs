@@ -2,8 +2,9 @@
 using Warehouses.backend.Models;
 using Warehouses.backend.Repositories;
 using Warehouses.backend.Repositories.Interfaces;
+using Warehouses.backend.Services;
 
-namespace Warehouses.backend.Services;
+namespace Warehouses.backend.App.Services;
 
 /// <summary>
 /// Сервис для управления площадками
@@ -14,7 +15,6 @@ public class PlatformService : IPlatformService
     private readonly IPlatformRepository _platformRepository;
     private readonly IPicketRepository _picketRepository;
     private readonly IPlatformPicketRepository _platformPicketRepository;
-    private readonly ICargoRepository _cargoRepository;
     private readonly ILogger<PlatformService> _logger;
 
     public PlatformService(
@@ -29,7 +29,6 @@ public class PlatformService : IPlatformService
         _platformRepository = platformRepository;
         _picketRepository = picketRepository;
         _platformPicketRepository = platformPicketRepository;
-        _cargoRepository = cargoRepository;
         _logger = logger;
     }
 
@@ -128,8 +127,8 @@ public class PlatformService : IPlatformService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating platform");
-            throw new ApplicationException("Failed to create platform", ex);
+            _logger.LogError(ex, "Ошибка создания площадки");
+            throw new ApplicationException("Ошибка создания площадки", ex);
         }
     }
 
@@ -170,74 +169,16 @@ public class PlatformService : IPlatformService
             throw new InvalidOperationException("Cannot update closed platform");
         
         // Проверяем уникальность имени
-        if (!string.Equals(platform.Name, name, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(platform.Name, name))
         {
             var existing = await _platformRepository.GetByNameAsync(platform.WarehouseId, name);
             if (existing != null && existing.Id != id)
                 throw new InvalidOperationException($"Platform with name '{name}' already exists in warehouse");
         }
         
-        // Обновляем имя
+        // Обновляем
         platform.Name = name;
         await _platformRepository.UpdateAsync(platform);
         await _platformRepository.SaveChangesAsync();
-    }
-
-
-    public async Task DeletePlatformAsync(int id)
-    {
-        var platform = await _platformRepository.GetByIdAsync(id);
-        if (platform == null)
-            throw new NotFoundException($"Platform with id {id} not found");
-        
-        if (!platform.ClosedAt.HasValue)
-            throw new InvalidOperationException("Cannot delete active platform");
-        
-        // Проверяем историю грузов
-        var hasCargoRecords = await _cargoRepository.GetByPlatformIdAsync(id);
-        if (hasCargoRecords.Any())
-            throw new InvalidOperationException("Cannot delete platform with cargo history");
-        
-        await _platformRepository.DeleteAsync(id);
-    }
-
-    public async Task<IEnumerable<Platform>> GetPlatformsByWarehouseAsync(int warehouseId)
-    {
-        return await _platformRepository.GetByWarehouseIdAsync(warehouseId);
-    }
-
-    public async Task<IEnumerable<Platform>> GetPlatformsByWarehouseAtTimeAsync(int warehouseId, DateTime time)
-    {
-        return await _platformRepository.GetByWarehouseIdAtTimeAsync(warehouseId, time);
-    }
-
-    public async Task<IEnumerable<int>> GetPicketIdsByPlatformAtTimeAsync(int platformId, DateTime time)
-    {
-        return await _platformPicketRepository.GetPicketIdsByPlatformIdAtTimeAsync(platformId, time);
-    }
-
-    public async Task AddPicketsToPlatformAsync(int platformId, IEnumerable<int> picketIds)
-    {
-        var platform = await _platformRepository.GetByIdAsync(platformId);
-        if (platform == null)
-            throw new NotFoundException($"Platform with id {platformId} not found");
-        
-        if (platform.ClosedAt.HasValue)
-            throw new InvalidOperationException("Cannot modify closed platform");
-        
-        await ValidatePicketsAvailabilityAsync(picketIds);
-        await _platformPicketRepository.AddPicketsToPlatformAsync(platformId, picketIds);
-    }
-
-    public async Task RemovePicketsFromPlatformAsync(int platformId, IEnumerable<int> picketIds)
-    {
-        var platform = await _platformRepository.GetByIdAsync(platformId);
-        if (platform == null)
-            throw new NotFoundException($"Platform with id {platformId} not found");
-        
-        if (platform.ClosedAt.HasValue)
-            throw new InvalidOperationException("Cannot modify closed platform");
-        
-        await _platformPicketRepository.RemovePicketsFromPlatformAsync(platformId, picketIds);
     }
 }
