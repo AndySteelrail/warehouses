@@ -22,4 +22,5 @@ public interface IPlatformPicketRepository : IRepository<PlatformPicket>
     Task<Dictionary<int, List<int>>> GetPlatformPicketsMappingAtTimeAsync(int warehouseId, DateTime time);
     Task<bool> ArePicketsSequentialAsync(IEnumerable<int> picketIds);
     Task<IEnumerable<Platform>> GetPlatformsByPicketIdsAsync(IEnumerable<int> picketIds);
+    Task<bool> ArePicketsInFutureClosedPlatformsAsync(IEnumerable<int> picketIds, DateTime time);
 }

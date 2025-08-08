@@ -43,7 +43,7 @@ public class PlatformCreationService : IPlatformCreationService
             warehouseId, platformName, string.Join(",", picketIds));
 
         // 1. Валидация
-        var validationResult = await _validationService.ValidatePlatformCreationAsync(warehouseId, platformName, picketIds);
+        var validationResult = await _validationService.ValidatePlatformCreationAsync(warehouseId, platformName, picketIds, createdAt);
         if (!validationResult.IsValid)
         {
             throw new InvalidOperationException(validationResult.ErrorMessage);

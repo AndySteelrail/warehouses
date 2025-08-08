@@ -7,7 +7,7 @@ namespace Warehouses.backend.Services;
 /// </summary>
 public interface IPlatformValidationService
 {
-    Task<ValidationResult> ValidatePlatformCreationAsync(int warehouseId, string platformName, List<int> picketIds);
+    Task<ValidationResult> ValidatePlatformCreationAsync(int warehouseId, string platformName, List<int> picketIds, DateTime? createdAt = null);
 }
 
 public class PlatformValidationService : IPlatformValidationService
@@ -26,7 +26,7 @@ public class PlatformValidationService : IPlatformValidationService
         _logger = logger;
     }
 
-    public async Task<ValidationResult> ValidatePlatformCreationAsync(int warehouseId, string platformName, List<int> picketIds)
+    public async Task<ValidationResult> ValidatePlatformCreationAsync(int warehouseId, string platformName, List<int> picketIds, DateTime? createdAt = null)
     {
         // 1. Проверка на пустые пикеты
         if (!picketIds.Any())
@@ -48,10 +48,18 @@ public class PlatformValidationService : IPlatformValidationService
             return ValidationResult.Error("Пикеты в новой площадке должны идти последовательно");
         }
 
-        // 4. Получаем карту существующих площадок
+        // 4. Проверка на пикеты в будущих закрытых площадках
+        var creationTime = createdAt?.ToUniversalTime() ?? DateTime.UtcNow;
+        var areInFutureClosedPlatforms = await _platformPicketRepository.ArePicketsInFutureClosedPlatformsAsync(picketIds, creationTime);
+        if (areInFutureClosedPlatforms)
+        {
+            return ValidationResult.Error("Вы пытаетесь изменить конфигурацию площадок, которые в дальнейшем закрыты. Есть риск нарушения консистентности данных. Операция разрешена только для площадок, которые не были закрыты.");
+        }
+
+        // 5. Получаем карту существующих площадок
         var platformMapping = await _platformPicketRepository.GetPlatformPicketsMappingAsync(warehouseId);
         
-        // 5. Проверка на полное совпадение с существующей площадкой
+        // 6. Проверка на полное совпадение с существующей площадкой
         foreach (var kvp in platformMapping)
         {
             var existingPicketIds = kvp.Value;
@@ -63,14 +71,14 @@ public class PlatformValidationService : IPlatformValidationService
             }
         }
 
-        // 6. Проверка на разрыв существующих площадок
+        // 7. Проверка на разрыв существующих площадок
         var breakValidation = await ValidateNoPlatformBreakAsync(platformMapping, picketIds);
         if (!breakValidation.IsValid)
         {
             return breakValidation;
         }
 
-        // 7. Анализ поглощения площадок
+        // 8. Анализ поглощения площадок
         var absorptionResult = await AnalyzePlatformAbsorptionAsync(platformMapping, picketIds);
         
         return ValidationResult.Success(absorptionResult);

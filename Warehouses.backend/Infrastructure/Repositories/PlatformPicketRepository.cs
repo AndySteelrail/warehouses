@@ -180,4 +180,16 @@ public class PlatformPicketRepository : Repository<PlatformPicket>, IPlatformPic
             .Include(p => p.PlatformPickets)
             .ToListAsync();
     }
+
+    public async Task<bool> ArePicketsInFutureClosedPlatformsAsync(IEnumerable<int> picketIds, DateTime time)
+    {
+        var result = await _context.PlatformPickets
+            .Include(pp => pp.Platform)
+            .AnyAsync(pp => picketIds.Contains(pp.PicketId) && 
+                           pp.AssignedAt <= time && 
+                           (pp.UnassignedAt == null || pp.UnassignedAt > time) &&
+                           pp.Platform.ClosedAt.HasValue && 
+                           pp.Platform.ClosedAt > time);
+        return result;
+    }
 }

@@ -67,6 +67,7 @@
                 <ComboBox Grid.Column="3" 
                          ItemsSource="{Binding CargoTypes}"
                          SelectedItem="{Binding SelectedCargoType}"
+                         PlaceholderText="Все грузы"
                          Background="White"
                          BorderBrush="#2E86AB"
                          BorderThickness="1"
