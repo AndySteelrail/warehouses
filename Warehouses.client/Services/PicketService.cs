@@ -86,31 +86,7 @@ public class PicketService : IPicketService
         }
     }
     
-    public async Task<Picket?> UpdatePicketAsync(Picket picket)
-    {
-        try
-        {
-            var picketData = new
-            {
-                Id = picket.Id,
-                Name = picket.Name,
-                WarehouseId = picket.WarehouseId
-            };
 
-            var success = await _apiService.PutAsync($"pickets/{picket.Id}", picketData);
-            if (success)
-            {
-                return picket;
-            }
-            return null;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    
     public async Task<bool> UpdatePicketNameAsync(int picketId, string name)
     {
         try

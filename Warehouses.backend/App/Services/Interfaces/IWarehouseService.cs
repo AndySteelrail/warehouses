@@ -13,7 +13,6 @@ public interface IWarehouseService
     Task<IEnumerable<Warehouse>> GetAllWarehousesAsync();
     Task<IEnumerable<Warehouse>> GetWarehousesAtTimeAsync(DateTime time);
     Task<WarehousesTreeDTO> GetWarehousesTreeAsync(DateTime time, int? cargoTypeId = null);
-    Task AddPicketToWarehouseAsync(int warehouseId, string picketName, DateTime? createdAt = null);
 
     Task CloseWarehouseAsync(int id, DateTime? closedAt = null);
     Task UpdateWarehouseAsync(int id, string name);

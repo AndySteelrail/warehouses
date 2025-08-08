@@ -42,13 +42,6 @@ public interface IPicketService
     Task<Picket?> CreatePicketAsync(int? platformId, int? warehouseId, string name, string? newPlatformName = null, DateTime? createdAt = null);
 
     /// <summary>
-    /// Обновить пикет
-    /// </summary>
-    /// <param name="picket">Данные пикета</param>
-    /// <returns>Обновленный пикет</returns>
-    Task<Picket?> UpdatePicketAsync(Picket picket);
-
-    /// <summary>
     /// Обновить название пикета
     /// </summary>
     /// <param name="picketId">Идентификатор пикета</param>

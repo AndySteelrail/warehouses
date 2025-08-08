@@ -36,6 +36,6 @@ public class EditWarehouseViewModel : EditItemViewModel
 
     protected override async Task<bool> SaveItemAsync()
     {
-        return await _warehouseService.UpdateWarehouseAsync(ItemId, ItemName);
+        return await _warehouseService.UpdateWarehouseNameAsync(ItemId, ItemName);
     }
 } 

@@ -180,24 +180,6 @@ public class WarehouseService : IWarehouseService
         return result;
     }
 
-    public async Task AddPicketToWarehouseAsync(int warehouseId, string picketName, DateTime? createdAt = null)
-    {
-        var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId);
-        if (warehouse == null)
-            throw new NotFoundException($"Склад с id {warehouseId} не найден");
-        
-        var picket = new Picket 
-        { 
-            Name = picketName, 
-            WarehouseId = warehouseId,
-            CreatedAt = createdAt?.ToUniversalTime() ?? DateTime.UtcNow
-        };
-        
-        await _picketRepository.AddAsync(picket);
-        await _picketRepository.SaveChangesAsync();
-    }
-
-
 
     public async Task CloseWarehouseAsync(int id, DateTime? closedAt = null)
     {

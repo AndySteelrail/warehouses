@@ -12,7 +12,6 @@ public interface IPlatformService
     Task<Platform> GetPlatformAsync(int id);
     Task<IEnumerable<Platform>> GetAllPlatformsAsync();
     Task UpdatePlatformAsync(int id, string name);
-    Task UpdatePlatformAsync(int id, string name, IEnumerable<int> picketIds);
 
     Task DeletePlatformAsync(int id);
     Task<IEnumerable<Platform>> GetPlatformsByWarehouseAsync(int warehouseId);

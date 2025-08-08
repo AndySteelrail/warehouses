@@ -54,66 +54,7 @@ public class PlatformService : IPlatformService
         }
     }
     
-    public async Task<Platform?> GetPlatformWithCargoAsync(int platformId, DateTime asOfDate)
-    {
-        try
-        {
-            var platformDto = await _apiService.GetAsync<PlatformDTO>($"platforms/{platformId}");
-            if (platformDto == null) return null;
 
-            var platform = MapToPlatform(platformDto);
-            
-            var utcDate = asOfDate.ToUniversalTime();
-            var cargoDto = await _apiService.GetAsync<CargoDTO>($"cargo/platform/{platformId}/current?asOfDate={utcDate:yyyy-MM-ddTHH:mm:ss}Z");
-            if (cargoDto != null)
-            {
-                platform.CurrentCargo = new Cargo
-                {
-                    Id = cargoDto.Id,
-                    Remainder = cargoDto.Remainder,
-                    Coming = cargoDto.Coming,
-                    Consumption = cargoDto.Consumption,
-                    RecordedAt = cargoDto.RecordedAt,
-                    PlatformId = cargoDto.PlatformId,
-                    GoodType = cargoDto.GoodType,
-
-                };
-            }
-
-            return platform;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-    
-    public async Task<Platform?> UpdatePlatformAsync(Platform platform)
-    {
-        try
-        {
-            var platformData = new
-            {
-                Id = platform.Id,
-                Name = platform.Name,
-                WarehouseId = platform.WarehouseId,
-                CreatedAt = platform.CreatedAt,
-                ClosedAt = platform.ClosedAt
-            };
-
-            var success = await _apiService.PutAsync($"platforms/{platform.Id}", platformData);
-            if (success)
-            {
-                return await GetPlatformAsync(platform.Id);
-            }
-            return null;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-    
     public async Task<bool> DeletePlatformAsync(int platformId)
     {
         try

@@ -27,22 +27,6 @@ public interface IPlatformService
     /// <returns>Площадка</returns>
     Task<Platform?> GetPlatformAsync(int platformId);
 
-    /// <summary>
-    /// Получить площадку с грузом на определенную дату
-    /// </summary>
-    /// <param name="platformId">Идентификатор площадки</param>
-    /// <param name="asOfDate">Дата, на которую нужно получить состояние груза</param>
-    /// <returns>Площадка с грузом</returns>
-    Task<Platform?> GetPlatformWithCargoAsync(int platformId, DateTime asOfDate);
-
-
-
-    /// <summary>
-    /// Обновить площадку
-    /// </summary>
-    /// <param name="platform">Данные площадки</param>
-    /// <returns>Обновленная площадка</returns>
-    Task<Platform?> UpdatePlatformAsync(Platform platform);
 
     /// <summary>
     /// Обновить название площадки

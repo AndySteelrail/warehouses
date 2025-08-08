@@ -39,7 +39,7 @@ public interface IWarehouseService
     /// <param name="id">Идентификатор склада</param>
     /// <param name="name">Новое название склада</param>
     /// <returns>Результат операции</returns>
-    Task<bool> UpdateWarehouseAsync(int id, string name);
+    Task<bool> UpdateWarehouseNameAsync(int id, string name);
 
     /// <summary>
     /// Удалить склад

@@ -183,46 +183,6 @@ public class PlatformService : IPlatformService
         await _platformRepository.SaveChangesAsync();
     }
 
-    public async Task UpdatePlatformAsync(int id, string name, IEnumerable<int> picketIds)
-    {
-        var platform = await _platformRepository.GetByIdAsync(id);
-        if (platform == null)
-            throw new NotFoundException($"Platform with id {id} not found");
-        
-        if (platform.ClosedAt.HasValue)
-            throw new InvalidOperationException("Cannot update closed platform");
-        
-        // Проверяем уникальность имени
-        if (!string.Equals(platform.Name, name, StringComparison.OrdinalIgnoreCase))
-        {
-            var existing = await _platformRepository.GetByNameAsync(platform.WarehouseId, name);
-            if (existing != null && existing.Id != id)
-                throw new InvalidOperationException($"Platform with name '{name}' already exists in warehouse");
-        }
-        
-        // Обновляем имя
-        platform.Name = name;
-        
-        // Получаем текущие пикеты
-        var currentPicketIds = (await _platformPicketRepository.GetByPlatformIdAsync(id))
-            .Select(pp => pp.PicketId)
-            .ToList();
-        
-        // Определяем изменения
-        var picketsToAdd = picketIds.Except(currentPicketIds).ToList();
-        var picketsToRemove = currentPicketIds.Except(picketIds).ToList();
-        
-        // Проверяем новые пикеты
-        await ValidatePicketsAvailabilityAsync(picketsToAdd);
-        
-        // Применяем изменения
-        await _platformPicketRepository.AddPicketsToPlatformAsync(id, picketsToAdd);
-        await _platformPicketRepository.RemovePicketsFromPlatformAsync(id, picketsToRemove);
-        
-        await _platformRepository.UpdateAsync(platform);
-    }
-
-
 
     public async Task DeletePlatformAsync(int id)
     {

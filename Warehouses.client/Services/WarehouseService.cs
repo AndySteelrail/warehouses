@@ -69,7 +69,7 @@ public class WarehouseService : IWarehouseService
         return warehouse != null ? MapToModel(warehouse) : null;
     }
     
-    public async Task<bool> UpdateWarehouseAsync(int id, string name)
+    public async Task<bool> UpdateWarehouseNameAsync(int id, string name)
     {
         var updateDto = new { Name = name };
         return await _apiService.PutAsync($"warehouses/{id}", updateDto);
