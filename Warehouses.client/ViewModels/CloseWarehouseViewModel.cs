@@ -11,7 +11,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для закрытия склада
 /// </summary>
-public partial class CloseWarehouseViewModel : DateTimeViewModelBase
+public partial class CloseWarehouseViewModel : CloseItemViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
     private readonly ILogger<CloseWarehouseViewModel> _logger;
@@ -31,6 +31,9 @@ public partial class CloseWarehouseViewModel : DateTimeViewModelBase
     }
     
     public string WarehouseName => _warehouse.Name;
+    public override string WindowTitle => "Закрытие склада";
+    public override string ConfirmText => "Вы действительно хотите закрыть склад?";
+    public override string TargetName => _warehouse.Name;
     
     public DateTime ClosedAt
     {

@@ -34,13 +34,13 @@
 
         <!-- Вопрос подтверждения -->
         <TextBlock Grid.Row="1" 
-                   Text="Вы действительно хотите закрыть пикет?" 
+                   Text="{Binding ConfirmText}" 
                    FontSize="14" 
                    Margin="0,0,0,10"/>
 
         <!-- Название пикета -->
         <TextBlock Grid.Row="2" 
-                   Text="{Binding PicketName}" 
+                   Text="{Binding TargetName}" 
                    FontSize="16" 
                    FontWeight="SemiBold"
                    Foreground="#dc3545"

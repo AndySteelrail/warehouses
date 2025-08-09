@@ -11,7 +11,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для закрытия пикета
 /// </summary>
-public partial class ClosePicketViewModel : DateTimeViewModelBase
+public partial class ClosePicketViewModel : CloseItemViewModelBase
 {
     private readonly IPicketService _picketService;
     private readonly ILogger<ClosePicketViewModel> _logger;
@@ -31,6 +31,9 @@ public partial class ClosePicketViewModel : DateTimeViewModelBase
     }
     
     public string PicketName => _picket.Name;
+    public override string WindowTitle => "Закрытие пикета";
+    public override string ConfirmText => "Вы действительно хотите закрыть пикет?";
+    public override string TargetName => _picket.Name;
     
     public DateTime ClosedAt
     {
