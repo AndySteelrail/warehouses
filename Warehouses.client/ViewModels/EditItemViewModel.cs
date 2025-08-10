@@ -7,18 +7,13 @@ using Warehouses.client.ViewModels.Base;
 
 namespace Warehouses.client.ViewModels
 {
-    public abstract class EditItemViewModel : ModalViewModelBase
+    public abstract class EditItemViewModel : FormViewModelBase
     {
-        private readonly ILogger _logger;
         private string _itemName = string.Empty;
         private int _itemId;
-        
-        public LoadingOverlayViewModel LoadingOverlay { get; } = new();
 
-        protected EditItemViewModel(IDialogService dialogService, ILogger logger) : base(dialogService)
+        protected EditItemViewModel(IDialogService dialogService, ILogger logger) : base(logger, dialogService)
         {
-            _logger = logger;
-
             SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
             CancelCommand = new RelayCommand(Cancel);
         }
@@ -53,21 +48,20 @@ namespace Warehouses.client.ViewModels
         {
             ItemId = id;
             ItemName = name;
-            _logger.LogInformation("Инициализация редактирования: Id={Id}, Name={Name}", id, name);
         }
 
         private async Task SaveAsync()
         {
-            await ExecuteWithOverlayAsync(async () =>
+            await ExecuteWithLoadingAsync(async () =>
             {
                 var success = await SaveItemAsync();
                 if (!success)
                 {
                     throw new Exception(ErrorMessageText);
                 }
-                _logger.LogInformation("Элемент успешно обновлен: Id={Id}, NewName={Name}", ItemId, ItemName);
                 await ShowSuccessAsync(SuccessMessage);
                 CloseWindow(true);
+                return true;
             }, LoadingText, ErrorMessageText);
         }
 
@@ -83,26 +77,6 @@ namespace Warehouses.client.ViewModels
         
         protected abstract Task<bool> SaveItemAsync();
 
-        private async Task<bool> ExecuteWithOverlayAsync(Func<Task> action, string loadingText, string errorPrefix)
-        {
-            try
-            {
-                LoadingOverlay.LoadingText = loadingText;
-                LoadingOverlay.IsVisible = true;
-                ClearError();
-                await action();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, errorPrefix);
-                await ShowErrorAsync($"{errorPrefix}: {ex.Message}");
-                return false;
-            }
-            finally
-            {
-                LoadingOverlay.IsVisible = false;
-            }
-        }
+
     }
 }

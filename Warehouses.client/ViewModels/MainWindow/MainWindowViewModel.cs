@@ -13,7 +13,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel главного окна приложения
 /// </summary>
-public partial class MainWindowViewModel : LoadingViewModelBase
+public partial class MainWindowViewModel : ObservableViewModelBase
 {
     private readonly TreeDataService _treeDataService;
     private readonly MainWindowStateManager _stateManager;
@@ -22,21 +22,11 @@ public partial class MainWindowViewModel : LoadingViewModelBase
     private ObservableCollection<TreeNode> _warehousesTree = new();
     private ItemDetailsViewModel _itemDetailsViewModel;
     
-    /// <summary>
-    /// ViewModel для индикатора загрузки
-    /// </summary>
     public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
-    /// <summary>
-    /// ViewModel для сообщений об ошибках
-    /// </summary>
     public ErrorMessageOverlayViewModel ErrorOverlay { get; } = new();
-
-    /// <summary>
-    /// Конструктор главного ViewModel
-    /// </summary>
+    
     public MainWindowViewModel(TreeDataService treeDataService, MainWindowStateManager stateManager, IDialogService dialogService, ILogger<MainWindowViewModel> logger)
-        : base(logger)
     {
         _treeDataService = treeDataService;
         _stateManager = stateManager;
@@ -122,10 +112,8 @@ public partial class MainWindowViewModel : LoadingViewModelBase
     [RelayCommand]
     private async Task LoadData()
     {
-        var ok = await ExecuteWithLoadingAsync(async () =>
+        await ExecuteActionAsync(async () =>
         {
-            ErrorOverlay.ClearError();
-
             if (!_stateManager.CargoTypes.Any())
             {
                 await _stateManager.LoadCargoTypesAsync();
@@ -140,12 +128,7 @@ public partial class MainWindowViewModel : LoadingViewModelBase
                 async (node) => await _operations.CreatePlatformAsync(node),
                 async (platformId) => await _operations.AddCargoAsync(new TreeNode { Id = platformId, NodeType = TreeNodeType.Platform })
             );
-        }, "Загрузка данных", "Ошибка при загрузке данных");
-
-        if (!ok)
-        {
-            ErrorOverlay.SetError(ErrorMessage);
-        }
+        }, "Ошибка при загрузке данных");
     }
     
     [RelayCommand]

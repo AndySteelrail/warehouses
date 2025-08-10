@@ -15,6 +15,7 @@
     <Grid Margin="20,20,20,60">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -26,19 +27,34 @@
                    FontWeight="Bold" 
                    Margin="0,0,0,20"/>
 
-        <!-- Тело -->
+        <!-- Название элемента -->
         <StackPanel Grid.Row="1" Margin="0,0,0,20">
-            <TextBlock Text="{Binding LabelText}" Margin="0,0,0,5"/>
-            <TextBox Text="{Binding ItemName}" Watermark="{Binding WatermarkText}" Margin="0,0,0,10"/>
-            <!-- Индикатор загрузки -->
-            <views:LoadingOverlay DataContext="{Binding LoadingOverlay}"/>
+            <TextBlock Text="{Binding LabelText}" 
+                      Margin="0,0,0,5"/>
+            <TextBox Text="{Binding ItemName}" 
+                     Watermark="{Binding WatermarkText}"
+                     Margin="0,0,0,10"/>
         </StackPanel>
 
-        <!-- Футер -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,20">
-            <Button Content="Отмена" Command="{Binding CancelCommand}" Margin="0,0,10,0" Padding="20,8"/>
-            <Button Content="Сохранить" Command="{Binding SaveCommand}" Background="#4CAF50" Foreground="White" Padding="20,8"/>
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,20,0,20">
+            <Button Content="Отмена" 
+                    Command="{Binding CancelCommand}"
+                    Margin="0,0,10,0"
+                    Padding="20,8"/>
+            <Button Content="Сохранить" 
+                    Command="{Binding SaveCommand}"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    Padding="20,8"/>
         </StackPanel>
+
+        <!-- Индикатор загрузки -->
+        <views:LoadingOverlay Grid.Row="1" Grid.RowSpan="2"
+                              DataContext="{Binding LoadingOverlay}"/>
     </Grid>
 </Window>
 

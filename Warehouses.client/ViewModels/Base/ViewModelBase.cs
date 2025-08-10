@@ -3,9 +3,9 @@
 namespace Warehouses.client.ViewModels;
 
 /// <summary>
-/// Базовый класс для всех ViewModels
+/// Базовый класс для всех ViewModels с поддержкой уведомлений об изменениях
 /// </summary>
-public abstract class ViewModelBase : ObservableObject
+public abstract class ObservableViewModelBase : ObservableObject
 {
     private bool _isBusy;
     private string _errorMessage = string.Empty;

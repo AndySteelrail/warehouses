@@ -1,10 +1,11 @@
+using Microsoft.Extensions.Logging;
 using Warehouses.client.Services;
 
 namespace Warehouses.client.ViewModels.Base;
 
-public abstract class CloseItemViewModelBase : DateTimeViewModelBase
+public abstract class CloseItemViewModelBase : FormViewModelBase
 {
-    protected CloseItemViewModelBase(IDialogService dialogService) : base(dialogService)
+    protected CloseItemViewModelBase(IDialogService dialogService, ILogger logger) : base(logger, dialogService)
     {
     }
 
@@ -12,5 +13,3 @@ public abstract class CloseItemViewModelBase : DateTimeViewModelBase
     public abstract string ConfirmText { get; }
     public abstract string TargetName { get; }
 }
-
-

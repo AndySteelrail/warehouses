@@ -49,13 +49,11 @@ public class CargoController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning("Некорректная операция: {Message}", ex.Message);
-            _logger.LogInformation("Возвращаем BadRequest с ErrorResponse: {Message}", ex.Message);
             return BadRequest(new ErrorResponse(ex.Message, errorCode: "INVALID_OPERATION"));
         }
         catch (ApplicationException ex)
         {
             _logger.LogWarning("Ошибка приложения: {Message}", ex.Message);
-            // Если у ApplicationException есть внутреннее исключение, используем его сообщение
             var innerMessage = ex.InnerException?.Message ?? ex.Message;
             return BadRequest(new ErrorResponse(innerMessage, errorCode: "INVALID_OPERATION"));
         }

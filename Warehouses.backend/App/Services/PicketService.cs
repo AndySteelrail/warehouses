@@ -106,7 +106,8 @@ public class PicketService : IPicketService
             {
                 _logger.LogError("Пикет с таким именем уже существует на время {Time}: Name={Name}, WarehouseId={WarehouseId}, ExistingPicketId={ExistingPicketId}, ExistingCreatedAt={ExistingCreatedAt}, ExistingClosedAt={ExistingClosedAt}", 
                     recordTime, finalPicketName, targetPlatform.WarehouseId, existingPicket.Id, existingPicket.CreatedAt, existingPicket.ClosedAt);
-                throw new InvalidOperationException($"Пикет с именем '{finalPicketName}' уже существовал на складе во время {recordTime:yyyy-MM-dd HH:mm:ss}");
+                var localRecordTime = recordTime.ToLocalTime();
+                throw new InvalidOperationException($"Пикет с именем '{finalPicketName}' уже существовал на складе во время {localRecordTime:yyyy-MM-dd HH:mm:ss}");
             }
             else
             {

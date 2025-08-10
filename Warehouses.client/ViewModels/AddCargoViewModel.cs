@@ -15,7 +15,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для добавления груза
 /// </summary>
-public partial class AddCargoViewModel : DateTimeViewModelBase
+public partial class AddCargoViewModel : FormViewModelBase
 {
     private readonly IReferenceService _referenceService;
     private readonly ICargoService _cargoService;
@@ -32,9 +32,9 @@ public partial class AddCargoViewModel : DateTimeViewModelBase
     private string _operationDateText;
            
 
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
+
            
-    public AddCargoViewModel(IReferenceService referenceService, ICargoService cargoService, IDialogService dialogService, ILogger<AddCargoViewModel> logger, int platformId) : base(dialogService)
+    public AddCargoViewModel(IReferenceService referenceService, ICargoService cargoService, IDialogService dialogService, ILogger<AddCargoViewModel> logger, int platformId) : base(logger, dialogService)
     {
         _referenceService = referenceService;
         _cargoService = cargoService;

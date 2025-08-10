@@ -13,32 +13,37 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для создания пикета
 /// </summary>
-public partial class CreatePicketViewModel : NameViewModelBase
+public partial class CreatePicketViewModel : FormViewModelBase
 {
     private readonly IPicketService _picketService;
     private readonly IPlatformService _platformService;
-    private readonly ILogger<CreatePicketViewModel> _logger;
     private readonly int _warehouseId;
     
     private Platform? _selectedPlatform;
     private bool _createNewPlatform;
     private string _newPlatformName = string.Empty;
     
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
-    
     public CreatePicketViewModel(
         IPicketService picketService, 
         IPlatformService platformService,
         IDialogService dialogService,
         int warehouseId,
-        ILogger<CreatePicketViewModel> logger) : base(dialogService)
+        ILogger<CreatePicketViewModel> logger) : base(logger, dialogService)
     {
         _picketService = picketService;
         _platformService = platformService;
-        _logger = logger;
         _warehouseId = warehouseId;
         
         AvailablePlatforms = new ObservableCollection<Platform>();
+        
+        // Подписываемся на изменения базовых свойств для обновления CanCreate
+        PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(CreatedAt) || e.PropertyName == nameof(CreatedAtText))
+            {
+                OnPropertyChanged(nameof(CanCreate));
+            }
+        };
         
         _ = LoadAvailablePlatformsAsync();
     }
@@ -46,7 +51,11 @@ public partial class CreatePicketViewModel : NameViewModelBase
     public string PicketName
     {
         get => Name;
-        set => Name = value;
+        set
+        {
+            Name = value;
+            OnPropertyChanged(nameof(CanCreate));
+        }
     }
     
     public ObservableCollection<Platform> AvailablePlatforms { get; }
@@ -86,20 +95,15 @@ public partial class CreatePicketViewModel : NameViewModelBase
         }
     }
     
-    public override bool CanCreate => base.CanCreate && 
+    public bool CanCreate => !string.IsNullOrWhiteSpace(PicketName) && 
                            (SelectedPlatform != null || 
                             (CreateNewPlatform && !string.IsNullOrWhiteSpace(NewPlatformName)));
     
-    // событие закрытия унаследовано из ModalViewModelBase
     
     private async Task LoadAvailablePlatformsAsync()
     {
-        try
+        await ExecuteWithLoadingAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Загрузка площадок...";
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-
             var platforms = await _platformService.GetPlatformsByWarehouseAsync(_warehouseId);
             
             AvailablePlatforms.Clear();
@@ -113,79 +117,51 @@ public partial class CreatePicketViewModel : NameViewModelBase
             {
                 CreateNewPlatform = true;
             }
-        }
-        catch (Exception ex)
-        {
-            SetError($"Ошибка при загрузке площадок: {ex.Message}");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+            return true;
+        }, "Загрузка площадок", "Ошибка при загрузке площадок");
     }
     
     [RelayCommand]
     private async Task Create()
     {
-        if (!CanCreate || !ValidateName())
+        if (!CanCreate)
         {
-            _logger.LogWarning("Попытка создать пикет без заполнения обязательных полей");
             SetError("Заполните все обязательные поля");
             return;
         }
 
-        try
+        await ExecuteWithLoadingAsync(async () =>
         {
-            LoadingOverlay.LoadingText = "Создание пикета...";
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-
-            // Универсальный вызов создания пикета
             int? platformId = CreateNewPlatform ? null : SelectedPlatform?.Id;
             int? warehouseId = CreateNewPlatform ? _warehouseId : null;
             string? newPlatformName = CreateNewPlatform ? NewPlatformName.Trim() : null;
             
             var picket = await _picketService.CreatePicketAsync(platformId, warehouseId, GetCleanedName(), newPlatformName, GetCreatedAtUtc());
             
-            if (picket != null)
+            if (picket == null)
             {
-                _logger.LogInformation("Пикет создан успешно. PicketId={PicketId}", picket.Id);
-                
-                var message = $"Пикет '{picket.Name}' успешно создан";
-                if (CreateNewPlatform)
-                {
-                    message += $" на новой площадке '{NewPlatformName.Trim()}'";
-                }
-                else if (SelectedPlatform != null)
-                {
-                    message += $" на площадке '{SelectedPlatform.Name}'";
-                }
-                
-                if (CreatedAt != DateTime.Now)
-                {
-                    message += $" на время {CreatedAt:yyyy-MM-dd HH:mm:ss}";
-                }
-                
-                await ShowSuccessAsync("Успех", message);
-                
-                CloseWindow(true);
-                return;
+                throw new Exception("Не удалось создать пикет");
             }
-            else
+            
+            var message = $"Пикет '{picket.Name}' успешно создан";
+            if (CreateNewPlatform)
             {
-                _logger.LogError("Создание пикета завершилось неудачно. Получен null результат");
-                SetError("Не удалось создать пикет");
+                message += $" на новой площадке '{NewPlatformName.Trim()}'";
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при создании пикета");
-            SetError($"Ошибка при создании пикета: {ex.Message}");
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
+            else if (SelectedPlatform != null)
+            {
+                message += $" на площадке '{SelectedPlatform.Name}'";
+            }
+            
+            if (CreatedAt != DateTime.Now)
+            {
+                message += $" на время {CreatedAt:yyyy-MM-dd HH:mm:ss}";
+            }
+            
+            await ShowSuccessAsync(message);
+            CloseWindow(true);
+            return true;
+        }, "Создание пикета", "Ошибка при создании пикета");
     }
     
     [RelayCommand]

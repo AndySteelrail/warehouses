@@ -109,7 +109,7 @@ public class PlatformCreationService : IPlatformCreationService
         // Обрабатываем частично поглощенные площадки
         if (absorptionResult.PartiallyAbsorbedPlatforms.Any())
         {
-            await HandlePartiallyAbsorbedPlatformsAsync(newPlatformId, absorptionResult.PartiallyAbsorbedPlatforms);
+            await HandlePartiallyAbsorbedPlatformsAsync(newPlatformId, absorptionResult.PartiallyAbsorbedPlatforms, createdAt);
         }
     }
 
@@ -186,7 +186,7 @@ public class PlatformCreationService : IPlatformCreationService
         }
     }
 
-    private async Task HandlePartiallyAbsorbedPlatformsAsync(int newPlatformId, List<int> partiallyAbsorbedPlatformIds)
+    private async Task HandlePartiallyAbsorbedPlatformsAsync(int newPlatformId, List<int> partiallyAbsorbedPlatformIds, DateTime? createdAt = null)
     {
         _logger.LogInformation("Обрабатываем частично поглощенные площадки: {PlatformIds}", string.Join(",", partiallyAbsorbedPlatformIds));
 
@@ -201,10 +201,10 @@ public class PlatformCreationService : IPlatformCreationService
             
             if (intersection.Any())
             {
-                await _platformPicketRepository.RemovePicketsFromPlatformAsync(platformId, intersection);
+                await _platformPicketRepository.RemovePicketsFromPlatformAsync(platformId, intersection, createdAt);
                 
-                _logger.LogInformation("Удалены пикеты {PicketIds} из площадки {PlatformId}", 
-                    string.Join(",", intersection), platformId);
+                _logger.LogInformation("Удалены пикеты {PicketIds} из площадки {PlatformId} на время {Time}", 
+                    string.Join(",", intersection), platformId, createdAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "текущее");
             }
         }
     }

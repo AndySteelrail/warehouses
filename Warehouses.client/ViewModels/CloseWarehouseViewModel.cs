@@ -14,19 +14,15 @@ namespace Warehouses.client.ViewModels;
 public partial class CloseWarehouseViewModel : CloseItemViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
-    private readonly ILogger<CloseWarehouseViewModel> _logger;
     private readonly Warehouse _warehouse;
-    
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
     public CloseWarehouseViewModel(
         IWarehouseService warehouseService,
         IDialogService dialogService,
         ILogger<CloseWarehouseViewModel> logger,
-        Warehouse warehouse) : base(dialogService)
+        Warehouse warehouse) : base(dialogService, logger)
     {
         _warehouseService = warehouseService;
-        _logger = logger;
         _warehouse = warehouse;
     }
     
@@ -50,16 +46,13 @@ public partial class CloseWarehouseViewModel : CloseItemViewModelBase
     [RelayCommand]
     private async Task Close()
     {
-        await ExecuteWithOverlayAsync(async () =>
+        await ExecuteWithLoadingAsync(async () =>
         {
             var success = await _warehouseService.CloseWarehouseAsync(_warehouse.Id, GetCreatedAtUtc());
             if (!success)
             {
                 throw new Exception("Не удалось закрыть склад");
             }
-
-            _logger.LogInformation("Склад успешно закрыт: Id={Id}, Name={Name}, ClosedAt={ClosedAt}",
-                _warehouse.Id, _warehouse.Name, ClosedAt);
 
             var message = $"Склад '{_warehouse.Name}' успешно закрыт";
             if (ClosedAt != DateTime.Now)
@@ -68,6 +61,7 @@ public partial class CloseWarehouseViewModel : CloseItemViewModelBase
             }
             await ShowSuccessAsync(message);
             CloseWindow(true);
+            return true;
         }, "Закрытие склада", "Ошибка при закрытии склада");
     }
     
@@ -77,25 +71,5 @@ public partial class CloseWarehouseViewModel : CloseItemViewModelBase
         CloseWindow(false);
     }
 
-    private async Task<bool> ExecuteWithOverlayAsync(Func<Task> action, string loadingText, string errorPrefix)
-    {
-        try
-        {
-            LoadingOverlay.LoadingText = loadingText;
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            await action();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, errorPrefix);
-            await ShowErrorAsync($"{errorPrefix}: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
-    }
+
 }

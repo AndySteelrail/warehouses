@@ -15,25 +15,24 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для создания площадки
 /// </summary>
-public class CreatePlatformViewModel : NameViewModelBase
+public class CreatePlatformViewModel : FormViewModelBase
 {
     private readonly IPlatformService _platformService;
     private readonly IPicketService _picketService;
-    private readonly ILogger<CreatePlatformViewModel> _logger;
+
 
     private ObservableCollection<PicketSelectionItem> _availablePickets = new();
     
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
+
 
     public CreatePlatformViewModel(
         IPlatformService platformService,
         IPicketService picketService,
         IDialogService dialogService,
-        ILogger<CreatePlatformViewModel> logger) : base(dialogService)
+        ILogger<CreatePlatformViewModel> logger) : base(logger, dialogService)
     {
         _platformService = platformService;
         _picketService = picketService;
-        _logger = logger;
 
         CreateCommand = new AsyncRelayCommand(CreateAsync, CanCreatePlatform);
         CancelCommand = new RelayCommand(CancelAsync);
@@ -98,6 +97,7 @@ public class CreatePlatformViewModel : NameViewModelBase
                 return item;
             }).ToList();
             AvailablePickets = new ObservableCollection<PicketSelectionItem>(picketItems);
+            return true;
         }, "Загрузка пикетов", "Не удалось загрузить список пикетов");
     }
 
@@ -135,7 +135,7 @@ public class CreatePlatformViewModel : NameViewModelBase
             if (selectedPickets.Count == 0)
             {
                 await ShowErrorAsync("Необходимо выбрать хотя бы один пикет");
-                return;
+                return false;
             }
 
             var picketIds = selectedPickets.Select(p => p.Id).ToList();
@@ -149,6 +149,7 @@ public class CreatePlatformViewModel : NameViewModelBase
             _logger.LogInformation("Площадка успешно создана: PlatformId={PlatformId}", platform.Id);
             await ShowSuccessAsync($"Площадка '{platform.Name}' успешно создана");
             CloseWindow(true);
+            return true;
         }, "Создание площадки", "Ошибка при создании площадки");
     }
 
@@ -168,25 +169,5 @@ public class CreatePlatformViewModel : NameViewModelBase
         CloseWindow(false);
     }
 
-    private async Task<bool> ExecuteWithLoadingAsync(Func<Task> operation, string loadingText, string errorMessage)
-    {
-        try
-        {
-            LoadingOverlay.LoadingText = loadingText;
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            await operation();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, errorMessage);
-            await ShowErrorAsync($"{errorMessage}: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
-    }
+
 } 

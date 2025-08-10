@@ -49,12 +49,16 @@ public class CargoService : ICargoService
             
             if (recordTime < platform.CreatedAt)
             {
-                throw new InvalidOperationException($"Нельзя добавить груз на время {recordTime:yyyy-MM-dd HH:mm:ss}, которое раньше создания площадки {platform.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                var localRecordTime = recordTime.ToLocalTime();
+                var localPlatformCreatedAt = platform.CreatedAt.ToLocalTime();
+                throw new InvalidOperationException($"Нельзя добавить груз на время {localRecordTime:yyyy-MM-dd HH:mm:ss}, которое раньше создания площадки {localPlatformCreatedAt:yyyy-MM-dd HH:mm:ss}");
             }
             
             if (platform.ClosedAt.HasValue && recordTime > platform.ClosedAt.Value)
             {
-                throw new InvalidOperationException($"Нельзя добавить груз на время {recordTime:yyyy-MM-dd HH:mm:ss}, которое позже закрытия площадки {platform.ClosedAt.Value:yyyy-MM-dd HH:mm:ss}");
+                var localRecordTime = recordTime.ToLocalTime();
+                var localPlatformClosedAt = platform.ClosedAt.Value.ToLocalTime();
+                throw new InvalidOperationException($"Нельзя добавить груз на время {localRecordTime:yyyy-MM-dd HH:mm:ss}, которое позже закрытия площадки {localPlatformClosedAt:yyyy-MM-dd HH:mm:ss}");
             }
             
             // Проверяем типы грузов и единиц измерения
@@ -116,7 +120,7 @@ public class CargoService : ICargoService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка записи операции с грузом");
-            throw; // Просто перебрасываем исходное исключение
+            throw;
         }
     }
 

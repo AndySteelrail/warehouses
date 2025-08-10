@@ -14,19 +14,15 @@ namespace Warehouses.client.ViewModels;
 public partial class ClosePicketViewModel : CloseItemViewModelBase
 {
     private readonly IPicketService _picketService;
-    private readonly ILogger<ClosePicketViewModel> _logger;
     private readonly Picket _picket;
-    
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
     public ClosePicketViewModel(
         IPicketService picketService,
         IDialogService dialogService,
         ILogger<ClosePicketViewModel> logger,
-        Picket picket) : base(dialogService)
+        Picket picket) : base(dialogService, logger)
     {
         _picketService = picketService;
-        _logger = logger;
         _picket = picket;
     }
     
@@ -50,16 +46,13 @@ public partial class ClosePicketViewModel : CloseItemViewModelBase
     [RelayCommand]
     private async Task Close()
     {
-        await ExecuteWithOverlayAsync(async () =>
+        await ExecuteWithLoadingAsync(async () =>
         {
             var success = await _picketService.ClosePicketAsync(_picket.Id, GetCreatedAtUtc());
             if (!success)
             {
                 throw new Exception("Не удалось закрыть пикет");
             }
-
-            _logger.LogInformation("Пикет успешно закрыт: Id={Id}, Name={Name}, ClosedAt={ClosedAt}",
-                _picket.Id, _picket.Name, ClosedAt);
 
             var message = $"Пикет '{_picket.Name}' успешно закрыт";
             if (ClosedAt != DateTime.Now)
@@ -68,6 +61,7 @@ public partial class ClosePicketViewModel : CloseItemViewModelBase
             }
             await ShowSuccessAsync(message);
             CloseWindow(true);
+            return true;
         }, "Закрытие пикета", "Ошибка при закрытии пикета");
     }
     
@@ -77,26 +71,6 @@ public partial class ClosePicketViewModel : CloseItemViewModelBase
         CloseWindow(false);
     }
 
-    private async Task<bool> ExecuteWithOverlayAsync(Func<Task> action, string loadingText, string errorPrefix)
-    {
-        try
-        {
-            LoadingOverlay.LoadingText = loadingText;
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            await action();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, errorPrefix);
-            await ShowErrorAsync($"{errorPrefix}: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
-    }
+
 }
 

@@ -12,7 +12,7 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для управления списком складов
 /// </summary>
-public partial class WarehousesViewModel : LoadingViewModelBase
+public partial class WarehousesViewModel : FormViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
     private ObservableCollection<Warehouse> _warehouses = new();
@@ -20,7 +20,7 @@ public partial class WarehousesViewModel : LoadingViewModelBase
     private string _newWarehouseName = string.Empty;
     
     public WarehousesViewModel(IWarehouseService warehouseService, ILogger<WarehousesViewModel> logger)
-        : base(logger)
+        : base(logger, null)
     {
         _warehouseService = warehouseService;
         LoadWarehousesCommand.ExecuteAsync(null);
@@ -58,6 +58,7 @@ public partial class WarehousesViewModel : LoadingViewModelBase
             {
                 Warehouses.Add(warehouse);
             }
+            return true;
         }, "Загрузка складов", "Ошибка при загрузке складов");
     }
     
@@ -85,6 +86,6 @@ public partial class WarehousesViewModel : LoadingViewModelBase
             SetError("Не удалось создать склад");
         }
     }
-    
+
 
 } 

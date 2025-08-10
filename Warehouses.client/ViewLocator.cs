@@ -38,6 +38,6 @@ public class ViewLocator : IDataTemplate
     /// <returns>True если может</returns>
     public bool Match(object? data)
     {
-        return data is ViewModelBase;
+        return data is ObservableViewModelBase;
     }
 }

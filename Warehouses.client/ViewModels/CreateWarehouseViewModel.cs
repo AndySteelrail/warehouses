@@ -10,18 +10,23 @@ namespace Warehouses.client.ViewModels;
 /// <summary>
 /// ViewModel для создания склада
 /// </summary>
-public partial class CreateWarehouseViewModel : NameViewModelBase
+public partial class CreateWarehouseViewModel : FormViewModelBase
 {
     private readonly IWarehouseService _warehouseService;
-    private readonly ILogger<CreateWarehouseViewModel> _logger;
-    
-    public LoadingOverlayViewModel LoadingOverlay { get; } = new();
     
     public CreateWarehouseViewModel(IWarehouseService warehouseService, IDialogService dialogService, ILogger<CreateWarehouseViewModel> logger)
-        : base(dialogService)
+        : base(logger, dialogService)
     {
         _warehouseService = warehouseService;
-        _logger = logger;
+        
+        // Подписываемся на изменения базовых свойств для обновления CanCreate
+        PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(CreatedAt) || e.PropertyName == nameof(CreatedAtText))
+            {
+                OnPropertyChanged(nameof(CanCreate));
+            }
+        };
     }
     
     /// <summary>
@@ -30,24 +35,29 @@ public partial class CreateWarehouseViewModel : NameViewModelBase
     public string WarehouseName
     {
         get => Name;
-        set => Name = value;
+        set
+        {
+            Name = value;
+            OnPropertyChanged(nameof(CanCreate));
+        }
     }
     
     [RelayCommand]
     private async Task Create()
     {
-        if (!ValidateName())
+        if (!CanCreate)
+        {
+            SetError("Заполните все обязательные поля");
             return;
+        }
 
-        var executed = await ExecuteWithLoadingAsync(async () =>
+        await ExecuteWithLoadingAsync(async () =>
         {
             var warehouse = await _warehouseService.CreateWarehouseAsync(GetCleanedName(), GetCreatedAtUtc());
             if (warehouse == null)
             {
                 throw new Exception("Не удалось создать склад");
             }
-
-            _logger.LogInformation("Склад успешно создан: Id={Id}, Name={Name}", warehouse.Id, warehouse.Name);
 
             var message = $"Склад '{warehouse.Name}' успешно создан";
             if (CreatedAt != DateTime.Now)
@@ -57,29 +67,13 @@ public partial class CreateWarehouseViewModel : NameViewModelBase
             await ShowSuccessAsync(message);
 
             CloseWindow(true);
+            return true;
         }, "Создание склада", "Ошибка при создании склада");
     }
 
-    private async Task<bool> ExecuteWithLoadingAsync(Func<Task> operation, string loadingText, string errorMessage)
-    {
-        try
-        {
-            LoadingOverlay.LoadingText = loadingText;
-            LoadingOverlay.IsVisible = true;
-            ClearError();
-            await operation();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SetError($"{errorMessage}: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            LoadingOverlay.IsVisible = false;
-        }
-    }
+
+    
+    public bool CanCreate => !string.IsNullOrWhiteSpace(WarehouseName);
     
     [RelayCommand]
     private void Cancel()
