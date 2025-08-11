@@ -149,27 +149,39 @@ public class PlatformPicketRepository : Repository<PlatformPicket>, IPlatformPic
         return mapping;
     }
 
-    public async Task<bool> ArePicketsSequentialAsync(IEnumerable<int> picketIds)
+    public async Task<bool> ArePicketsSequentialAsync(IEnumerable<int> picketIds, int warehouseId)
     {
-        // Получаем пикеты с их названиями
-        var pickets = await _context.Pickets
-            .Where(p => picketIds.Contains(p.Id))
-            .Select(p => new { p.Id, p.Name })
+        if (!picketIds.Any()) return true;
+        if (picketIds.Count() == 1) return true;
+
+        // Получаем все пикеты склада, отсортированные по названию
+        var allWarehousePickets = await _context.Pickets
+            .Where(p => p.WarehouseId == warehouseId)
+            .OrderBy(p => p.Name)
+            .Select(p => p.Name)
             .ToListAsync();
 
-        if (pickets.Count <= 1) return true;
+        // Получаем выбранные пикеты, отсортированные по названию
+        var selectedPickets = await _context.Pickets
+            .Where(p => picketIds.Contains(p.Id))
+            .OrderBy(p => p.Name)
+            .Select(p => p.Name )
+            .ToListAsync();
 
-        // Сортируем по названию лексикографически
-        var orderedPickets = pickets.OrderBy(p => p.Name).ToList();
+        // Находим индекс первого выбранного пикета в списке пикетов склада
+        var firstSelectedIndex = allWarehousePickets.IndexOf(selectedPickets[0]);
+        if (firstSelectedIndex == -1) return false;
 
-        // Проверяем, что ID идут в том же порядке, что и названия
-        var orderedIds = picketIds.OrderBy(id => id).ToList();
-        
-        for (int i = 0; i < orderedPickets.Count; i++)
+        // Проверяем, что все выбранные пикеты идут последовательно в общем списке
+        for (int i = 0; i < selectedPickets.Count; i++)
         {
-            if (orderedPickets[i].Id != orderedIds[i])
+            if (firstSelectedIndex + i >= allWarehousePickets.Count || 
+                selectedPickets[i] != allWarehousePickets[firstSelectedIndex + i])
+            {
                 return false;
+            }
         }
+
         return true;
     }
 

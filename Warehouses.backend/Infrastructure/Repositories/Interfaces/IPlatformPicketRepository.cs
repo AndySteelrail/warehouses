@@ -14,13 +14,12 @@ public interface IPlatformPicketRepository : IRepository<PlatformPicket>
     Task AddPicketsToPlatformAsync(int platformId, IEnumerable<int> picketIds, DateTime? assignedAt = null);
     Task RemovePicketsFromPlatformAsync(int platformId, IEnumerable<int> picketIds, DateTime? unassignedAt = null);
     
-    // Новые методы для валидации площадок
     Task<IEnumerable<int>> GetPicketIdsByPlatformIdAsync(int platformId);
     Task<IEnumerable<int>> GetPicketIdsByPlatformIdAtTimeAsync(int platformId, DateTime time);
     Task<IEnumerable<int>> GetPicketIdsByWarehouseIdAsync(int warehouseId);
     Task<Dictionary<int, List<int>>> GetPlatformPicketsMappingAsync(int warehouseId);
     Task<Dictionary<int, List<int>>> GetPlatformPicketsMappingAtTimeAsync(int warehouseId, DateTime time);
-    Task<bool> ArePicketsSequentialAsync(IEnumerable<int> picketIds);
+    Task<bool> ArePicketsSequentialAsync(IEnumerable<int> picketIds, int warehouseId);
     Task<IEnumerable<Platform>> GetPlatformsByPicketIdsAsync(IEnumerable<int> picketIds);
     Task<bool> ArePicketsInFutureClosedPlatformsAsync(IEnumerable<int> picketIds, DateTime time);
 }

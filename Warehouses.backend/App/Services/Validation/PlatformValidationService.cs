@@ -43,7 +43,7 @@ public class PlatformValidationService : IPlatformValidationService
         }
 
         // 3. Проверка непрерывности пикетов
-        var areSequential = await _platformPicketRepository.ArePicketsSequentialAsync(picketIds);
+        var areSequential = await _platformPicketRepository.ArePicketsSequentialAsync(picketIds, warehouseId);
         if (!areSequential)
         {
             return ValidationResult.Error("Пикеты в новой площадке должны идти последовательно");
